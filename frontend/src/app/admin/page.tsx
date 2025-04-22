@@ -34,21 +34,18 @@ export default function Admin() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [usersRes, teamsRes, driversRes] = await Promise.all([
-          fetch('http://localhost:8080/api/users'),
+        const [teamsRes, driversRes] = await Promise.all([
           fetch('http://localhost:8080/api/teams'),
           fetch('http://localhost:8080/api/drivers'),
         ]);
 
-        if (!usersRes.ok || !teamsRes.ok || !driversRes.ok) {
+        if (!teamsRes.ok || !driversRes.ok) {
           throw new Error('Failed to fetch data');
         }
 
-        const usersData = await usersRes.json();
         const teamsData = await teamsRes.json();
         const driversData = await driversRes.json();
 
-        setUsers(usersData);
         setTeams(teamsData);
         setDrivers(driversData);
       } catch (err) {
@@ -128,9 +125,9 @@ export default function Admin() {
               teams,
               [
                 { label: 'ID', key: 'teamId' },
-                { label: 'Name', key: 'name' },
-                { label: 'Nationality', key: 'nationality' },
-                { label: 'Founded Year', key: 'foundedYear' },
+                { label: 'Name', key: 'teamName' },
+                { label: 'Base Location', key: 'baseLocation' },
+                { label: 'Total Point', key: 'totalPoints' },
               ]
             )}
 
@@ -140,7 +137,7 @@ export default function Admin() {
               drivers,
               [
                 { label: 'ID', key: 'driverId' },
-                { label: 'Name', key: 'name' },
+                { label: 'Name', key: 'driverName' },
                 { label: 'Nationality', key: 'nationality' },
                 { label: 'Team', key: 'teamName' },
               ]
