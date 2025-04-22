@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.sql.Date;
-import java.time.LocalDate;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Service
 public class UserService {
@@ -28,10 +28,23 @@ public class UserService {
         user.setPassWord(passwordEncoder.encode(user.getPassWord()));
 
         // Thiết lập giá trị mặc định
-        user.setRole("USER"); // Vai trò mặc định
-        user.setCreateat(Date.valueOf(LocalDate.now())); // Ngày tạo
+        user.setRole(User.Role.ThanhVien); // Vai trò mặc định
+        user.setCreatedAt(Timestamp.valueOf(LocalDateTime.now())); // Thời gian tạo
 
         // Lưu user vào database
         return userRepository.save(user);
+    }
+
+    public User loginUser(String userName, String password) {
+        // Tìm user theo username
+        User user = userRepository.findByUserName(userName)
+            .orElseThrow(() -> new RuntimeException("Invalid username or password"));
+
+        // So sánh mật khẩu nhập vào với mật khẩu đã hash
+        if (!passwordEncoder.matches(password, user.getPassWord())) {
+            throw new RuntimeException("Invalid username or password");
+        }
+
+        return user;
     }
 }

@@ -1,7 +1,7 @@
 package com.example.backend.model;
 
 import jakarta.persistence.*;
-import java.sql.Date;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "Users")
@@ -23,23 +23,28 @@ public class User {
     @Column(name = "lastname")
     private String lastName;
 
-    @Column(name = "Role")
-    private String role;
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
-    @Column(name = "create_at")
-    private Date createat;
+    @Column(name = "created_at")
+    private Timestamp createdAt;
+
+    public enum Role {
+        Admin, QuanLy, ThanhVien
+    }
 
     public User() {
     }
 
-    public User(Integer userId, String userName, String passWord, String firstName, String lastName, String role, Date createat) {
+    public User(Integer userId, String userName, String passWord, String firstName, String lastName, Role role, Timestamp createdAt) {
         this.userId = userId;
         this.userName = userName;
         this.passWord = passWord;
         this.firstName = firstName;
         this.lastName = lastName;
         this.role = role;
-        this.createat = createat;
+        this.createdAt = createdAt;
     }
 
     // Getters và Setters
@@ -83,19 +88,19 @@ public class User {
         this.lastName = lastName;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 
-    public Date getCreateat() {
-        return createat;
+    public Timestamp getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreateat(Date createat) {
-        this.createat = createat;
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 }

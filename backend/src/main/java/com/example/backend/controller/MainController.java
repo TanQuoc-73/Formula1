@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -51,15 +52,29 @@ public class MainController {
     public ResponseEntity<?> register(@RequestBody User user) {
         try {
             User registeredUser = userService.registerUser(user);
-            return ResponseEntity.ok("Đăng ký thành công: " + registeredUser.getUserName());
+            return ResponseEntity.ok(Map.of("message", "Đăng ký thành công", "userName", registeredUser.getUserName()));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<?> login() {
-        return ResponseEntity.ok("API Login - Chưa triển khai");
+    public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
+        try {
+            String userName = loginRequest.get("userName");
+            String password = loginRequest.get("password");
+            User user = userService.loginUser(userName, password);
+            return ResponseEntity.ok(Map.of(
+                "message", "Đăng nhập thành công",
+                "userId", user.getUserId(),
+                "userName", user.getUserName(),
+                "firstName", user.getFirstName(),
+                "lastName", user.getLastName(),
+                "role", user.getRole().name()
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+        }
     }
 
     @GetMapping("/teams")
