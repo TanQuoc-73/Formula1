@@ -37,8 +37,8 @@ export default function NavBar() {
               <Image
                 src="/images/logof1.png"
                 alt="Formula 1 Logo"
-                width={40}
-                height={40}
+                width={80}
+                height={880}
                 priority
               />
               <span className="ml-2 text-2xl font-bold text-white">FORMULA1</span>
@@ -53,15 +53,16 @@ export default function NavBar() {
               </Link>
             </li>
             <li>
-              <Link href="/races" className="hover:text-red-200">
-                Races
-              </Link>
-            </li>
-            <li>
               <Link href="/news" className="hover:text-red-200">
                 News
               </Link>
             </li>
+            <li>
+              <Link href="/about" className="hover:text-red-200">
+                About
+              </Link>
+            </li>
+            
             <li>
               <Link href="/teams-drivers" className="hover:text-red-200">
                 Teams/Drivers

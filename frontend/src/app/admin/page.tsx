@@ -5,13 +5,51 @@ import { useRouter } from 'next/navigation';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 
+// Định nghĩa các interface
+interface CurrentUser {
+  role: string;
+  // Có thể thêm các thuộc tính khác nếu cần
+}
+
+interface Role {
+  name: string;
+}
+
+interface User {
+  userId: number;
+  userName: string;
+  firstName: string;
+  lastName: string;
+  role: Role;
+  createdAt: string;
+}
+
+interface Team {
+  teamId: number;
+  teamName: string;
+  baseLocation: string;
+  totalPoints: number;
+}
+
+interface Driver {
+  driverId: number;
+  driverName: string;
+  nationality: string;
+  teamName: string;
+}
+
+type Column<T> = {
+  label: string;
+  render: (item: T) => React.ReactNode;
+};
+
 export default function Admin() {
-  const [user, setUser] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [teams, setTeams] = useState([]);
-  const [drivers, setDrivers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [user, setUser] = useState<CurrentUser | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
   const router = useRouter();
 
   // Kiểm tra vai trò Admin và lấy dữ liệu
@@ -22,7 +60,7 @@ export default function Admin() {
       return;
     }
 
-    const parsedUser = JSON.parse(storedUser);
+    const parsedUser: CurrentUser = JSON.parse(storedUser);
     if (parsedUser.role !== 'Admin') {
       router.push('/');
       return;
@@ -34,22 +72,26 @@ export default function Admin() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [teamsRes, driversRes] = await Promise.all([
+        // Giả sử có API endpoint cho users
+        const [usersRes, teamsRes, driversRes] = await Promise.all([
+          fetch('http://localhost:8080/api/users'),
           fetch('http://localhost:8080/api/teams'),
           fetch('http://localhost:8080/api/drivers'),
         ]);
 
-        if (!teamsRes.ok || !driversRes.ok) {
+        if (!usersRes.ok || !teamsRes.ok || !driversRes.ok) {
           throw new Error('Failed to fetch data');
         }
 
-        const teamsData = await teamsRes.json();
-        const driversData = await driversRes.json();
+        const usersData: User[] = await usersRes.json();
+        const teamsData: Team[] = await teamsRes.json();
+        const driversData: Driver[] = await driversRes.json();
 
+        setUsers(usersData);
         setTeams(teamsData);
         setDrivers(driversData);
       } catch (err) {
-        setError(err.message);
+        setError((err as Error).message);
       } finally {
         setLoading(false);
       }
@@ -58,8 +100,13 @@ export default function Admin() {
     fetchData();
   }, [router]);
 
-  // Hàm hiển thị bảng dữ liệu
-  const renderTable = (title, data, columns) => (
+  // Hàm hiển thị bảng dữ liệu generic
+  const renderTable = <T,>(
+    title: string,
+    data: T[],
+    columns: Column<T>[],
+    keyExtractor: (item: T) => string | number
+  ) => (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h3 className="text-xl font-semibold text-gray-800 mb-4">{title}</h3>
       {data.length === 0 ? (
@@ -77,11 +124,11 @@ export default function Admin() {
               </tr>
             </thead>
             <tbody>
-              {data.map((item, index) => (
-                <tr key={index} className="border-b hover:bg-gray-50">
+              {data.map((item) => (
+                <tr key={keyExtractor(item)} className="border-b hover:bg-gray-50">
                   {columns.map((col, colIndex) => (
                     <td key={colIndex} className="px-4 py-2">
-                      {col.key === 'role' ? item[col.key]?.name : item[col.key] || '-'}
+                      {col.render(item)}
                     </td>
                   ))}
                 </tr>
@@ -92,6 +139,32 @@ export default function Admin() {
       )}
     </div>
   );
+
+  // Định nghĩa các cột cho bảng Users
+  // const userColumns: Column<User>[] = [
+  //   { label: 'ID', render: (user) => user.userId },
+  //   { label: 'Username', render: (user) => user.userName },
+  //   { label: 'First Name', render: (user) => user.firstName },
+  //   { label: 'Last Name', render: (user) => user.lastName },
+  //   { label: 'Role', render: (user) => user.role.name },
+  //   { label: 'Created At', render: (user) => user.createdAt },
+  // ];
+
+  // Định nghĩa các cột cho bảng Teams
+  const teamColumns: Column<Team>[] = [
+    { label: 'ID', render: (team) => team.teamId },
+    { label: 'Name', render: (team) => team.teamName },
+    { label: 'Base Location', render: (team) => team.baseLocation },
+    { label: 'Total Point', render: (team) => team.totalPoints },
+  ];
+
+  // Định nghĩa các cột cho bảng Drivers
+  const driverColumns: Column<Driver>[] = [
+    { label: 'ID', render: (driver) => driver.driverId },
+    { label: 'Name', render: (driver) => driver.driverName },
+    { label: 'Nationality', render: (driver) => driver.nationality },
+    { label: 'Team', render: (driver) => driver.teamName },
+  ];
 
   return (
     <div className="flex flex-col bg-gray-200 min-h-screen">
@@ -106,42 +179,11 @@ export default function Admin() {
         ) : (
           <div className="space-y-8">
             {/* Danh sách người dùng */}
-            {renderTable(
-              'Users',
-              users,
-              [
-                { label: 'ID', key: 'userId' },
-                { label: 'Username', key: 'userName' },
-                { label: 'First Name', key: 'firstName' },
-                { label: 'Last Name', key: 'lastName' },
-                { label: 'Role', key: 'role' },
-                { label: 'Created At', key: 'createdAt' },
-              ]
-            )}
-
+            {renderTable('Users', users, userColumns, (user) => user.userId)}
             {/* Danh sách đội đua */}
-            {renderTable(
-              'Teams',
-              teams,
-              [
-                { label: 'ID', key: 'teamId' },
-                { label: 'Name', key: 'teamName' },
-                { label: 'Base Location', key: 'baseLocation' },
-                { label: 'Total Point', key: 'totalPoints' },
-              ]
-            )}
-
+            {renderTable('Teams', teams, teamColumns, (team) => team.teamId)}
             {/* Danh sách tay đua */}
-            {renderTable(
-              'Drivers',
-              drivers,
-              [
-                { label: 'ID', key: 'driverId' },
-                { label: 'Name', key: 'driverName' },
-                { label: 'Nationality', key: 'nationality' },
-                { label: 'Team', key: 'teamName' },
-              ]
-            )}
+            {renderTable('Drivers', drivers, driverColumns, (driver) => driver.driverId)}
           </div>
         )}
       </div>
