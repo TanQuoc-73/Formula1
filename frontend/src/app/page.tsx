@@ -2,13 +2,14 @@ import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 
+
 export default function Home() {
   return (
     <div className="flex flex-col bg-gray-200 min-h-screen">
       <NavBar />
 
       {/* Main Content */}
-      <main className="flex-grow">
+      <main className="flex-grow mt-5">
         {/* Hero Section */}
         <section className="bg-gradient-to-r from-red-950 to-red-800 text-white py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
