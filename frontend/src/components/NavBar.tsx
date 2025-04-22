@@ -73,7 +73,7 @@ export default function NavBar() {
                   className="flex items-center space-x-2 text-white hover:text-red-200"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  <span>{user.firstName || user.userName}</span>
+                  <span>{user.lastName}</span>
                   <svg
                     className="h-4 w-4"
                     fill="none"
