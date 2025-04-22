@@ -11,19 +11,6 @@ interface CurrentUser {
   // Có thể thêm các thuộc tính khác nếu cần
 }
 
-interface Role {
-  name: string;
-}
-
-interface User {
-  userId: number;
-  userName: string;
-  firstName: string;
-  lastName: string;
-  role: Role;
-  createdAt: string;
-}
-
 interface Team {
   teamId: number;
   teamName: string;
@@ -45,7 +32,6 @@ type Column<T> = {
 
 export default function Admin() {
   const [user, setUser] = useState<CurrentUser | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -72,22 +58,18 @@ export default function Admin() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Giả sử có API endpoint cho users
-        const [usersRes, teamsRes, driversRes] = await Promise.all([
-          fetch('http://localhost:8080/api/users'),
+        const [teamsRes, driversRes] = await Promise.all([
           fetch('http://localhost:8080/api/teams'),
           fetch('http://localhost:8080/api/drivers'),
         ]);
 
-        if (!usersRes.ok || !teamsRes.ok || !driversRes.ok) {
+        if (!teamsRes.ok || !driversRes.ok) {
           throw new Error('Failed to fetch data');
         }
 
-        const usersData: User[] = await usersRes.json();
         const teamsData: Team[] = await teamsRes.json();
         const driversData: Driver[] = await driversRes.json();
 
-        setUsers(usersData);
         setTeams(teamsData);
         setDrivers(driversData);
       } catch (err) {
@@ -140,16 +122,6 @@ export default function Admin() {
     </div>
   );
 
-  // Định nghĩa các cột cho bảng Users
-  // const userColumns: Column<User>[] = [
-  //   { label: 'ID', render: (user) => user.userId },
-  //   { label: 'Username', render: (user) => user.userName },
-  //   { label: 'First Name', render: (user) => user.firstName },
-  //   { label: 'Last Name', render: (user) => user.lastName },
-  //   { label: 'Role', render: (user) => user.role.name },
-  //   { label: 'Created At', render: (user) => user.createdAt },
-  // ];
-
   // Định nghĩa các cột cho bảng Teams
   const teamColumns: Column<Team>[] = [
     { label: 'ID', render: (team) => team.teamId },
@@ -178,8 +150,6 @@ export default function Admin() {
           <p className="text-red-500">{error}</p>
         ) : (
           <div className="space-y-8">
-            {/* Danh sách người dùng */}
-            {renderTable('Users', users, userColumns, (user) => user.userId)}
             {/* Danh sách đội đua */}
             {renderTable('Teams', teams, teamColumns, (team) => team.teamId)}
             {/* Danh sách tay đua */}
