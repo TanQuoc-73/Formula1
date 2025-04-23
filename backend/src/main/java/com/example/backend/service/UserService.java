@@ -28,7 +28,12 @@ public class UserService {
         user.setPassWord(passwordEncoder.encode(user.getPassWord()));
 
         // Thiết lập giá trị mặc định
-        user.setRole(User.Role.ThanhVien); // Vai trò mặc định
+
+
+        // user.setRole(User.Role.QuanLy); // Vai trò mặc định
+
+
+        
         user.setCreatedAt(Timestamp.valueOf(LocalDateTime.now())); // Thời gian tạo
 
         // Lưu user vào database

@@ -23,7 +23,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) // Vô hiệu hóa CSRF trong phát triển
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**", "/api/").permitAll() // Cho phép truy cập công khai vào /api/auth/** và /api/
-                .requestMatchers("/api/teams", "/api/drivers", "/api/tracks", "/api/races", 
+                .requestMatchers("/api/users","/api/teams", "/api/drivers", "/api/tracks", "/api/races", 
                                 "/api/race-results", "/api/schedules", "/api/fastest-laps").permitAll() // Tạm thời cho phép các endpoint F1
                 .anyRequest().authenticated() // Các request khác yêu cầu xác thực
             )
