@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 
 // Định nghĩa các interface
 interface CurrentUser {
   role: string;
-  // Có thể thêm các thuộc tính khác nếu cần
 }
 
 interface Team {
@@ -27,7 +27,13 @@ interface Driver {
 
 type Column<T> = {
   label: string;
-  render: (item: T) => React.ReactNode;
+  key: keyof T;
+  sortable?: boolean;
+};
+
+type SortConfig<T> = {
+  key: keyof T;
+  direction: 'asc' | 'desc';
 };
 
 export default function Admin() {
@@ -36,6 +42,7 @@ export default function Admin() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
+  const [sortConfig, setSortConfig] = useState<SortConfig<Team | Driver> | null>(null);
   const router = useRouter();
 
   // Kiểm tra vai trò Admin và lấy dữ liệu
@@ -54,7 +61,6 @@ export default function Admin() {
 
     setUser(parsedUser);
 
-    // Gọi API để lấy dữ liệu
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -82,7 +88,28 @@ export default function Admin() {
     fetchData();
   }, [router]);
 
-  // Hàm hiển thị bảng dữ liệu generic
+  // Hàm sắp xếp dữ liệu
+  const sortData = <T,>(data: T[], config: SortConfig<T> | null): T[] => {
+    if (!config) return data;
+    const { key, direction } = config;
+    return [...data].sort((a, b) => {
+      if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
+      if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  // Hàm xử lý sự kiện sắp xếp
+  const handleSort = <T,>(key: keyof T) => {
+    setSortConfig((prevConfig) => {
+      if (prevConfig && prevConfig.key === key) {
+        return { key, direction: prevConfig.direction === 'asc' ? 'desc' : 'asc' };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
+  // Hàm hiển thị bảng dữ liệu
   const renderTable = <T,>(
     title: string,
     data: T[],
@@ -98,21 +125,45 @@ export default function Admin() {
           <table className="min-w-full table-auto">
             <thead>
               <tr className="bg-gray-100">
-                {columns.map((col, index) => (
-                  <th key={index} className="px-4 py-2 text-left text-gray-600">
-                    {col.label}
+                {columns.map((col) => (
+                  <th
+                    key={col.key as string}
+                    className="px-4 py-2 text-left text-gray-600 cursor-pointer"
+                    onClick={() => col.sortable && handleSort(col.key)}
+                  >
+                    <div className="flex items-center">
+                      {col.label}
+                      {col.sortable && (
+                        <span className="ml-1">
+                          {sortConfig?.key === col.key ? (
+                            sortConfig.direction === 'asc' ? (
+                              <ChevronUpIcon className="h-4 w-4" />
+                            ) : (
+                              <ChevronDownIcon className="h-4 w-4" />
+                            )
+                          ) : (
+                            <ChevronDownIcon className="h-4 w-4 text-gray-400" />
+                          )}
+                        </span>
+                      )}
+                    </div>
                   </th>
                 ))}
+                <th className="px-4 py-2 text-left text-gray-600">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {data.map((item) => (
+              {sortData(data, sortConfig).map((item) => (
                 <tr key={keyExtractor(item)} className="border-b hover:bg-gray-50">
-                  {columns.map((col, colIndex) => (
-                    <td key={colIndex} className="px-4 py-2">
-                      {col.render(item)}
+                  {columns.map((col) => (
+                    <td key={col.key as string} className="px-4 py-2">
+                      {String(item[col.key])}
                     </td>
                   ))}
+                  <td className="px-4 py-2">
+                    <button className="text-blue-500 hover:underline mr-2">Edit</button>
+                    <button className="text-red-500 hover:underline">Delete</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -124,38 +175,78 @@ export default function Admin() {
 
   // Định nghĩa các cột cho bảng Teams
   const teamColumns: Column<Team>[] = [
-    { label: 'ID', render: (team) => team.teamId },
-    { label: 'Name', render: (team) => team.teamName },
-    { label: 'Base Location', render: (team) => team.baseLocation },
-    { label: 'Total Point', render: (team) => team.totalPoints },
+    { label: 'ID', key: 'teamId', sortable: true },
+    { label: 'Name', key: 'teamName', sortable: true },
+    { label: 'Base Location', key: 'baseLocation', sortable: true },
+    { label: 'Total Point', key: 'totalPoints', sortable: true },
   ];
 
   // Định nghĩa các cột cho bảng Drivers
   const driverColumns: Column<Driver>[] = [
-    { label: 'ID', render: (driver) => driver.driverId },
-    { label: 'Name', render: (driver) => driver.driverName },
-    { label: 'Nationality', render: (driver) => driver.nationality },
-    { label: 'Team', render: (driver) => driver.teamName },
+    { label: 'ID', key: 'driverId', sortable: true },
+    { label: 'Name', key: 'driverName', sortable: true },
+    { label: 'Nationality', key: 'nationality', sortable: true },
+    { label: 'Team', key: 'teamName', sortable: true },
   ];
 
   return (
-    <div className="flex flex-col bg-gray-200 min-h-screen">
+    <div className="flex flex-col bg-gray-100 min-h-screen mt-4">
       <NavBar />
-      <div className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mt-20">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">Admin Dashboard</h1>
+      <div className="flex flex-1 mt-16">
+        {/* Sidebar */}
+        <aside className="w-64 bg-white shadow-md">
+          <div className="p-4">
+            <h2 className="text-xl font-semibold text-gray-800">Admin Menu</h2>
+            <ul className="mt-4 space-y-2">
+              <li>
+                <a href="/admin" className="block py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
+                  Dashboard
+                </a>
+              </li>
+              <li>
+                <a href="/teams" className="block py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
+                  Team
+                </a>
+              </li>
+              <li>
+                <a href="drivers" className="block py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
+                  Driver
+                </a>
+              </li>
 
-        {loading ? (
-          <p className="text-gray-600">Loading...</p>
-        ) : error ? (
-          <p className="text-red-500">{error}</p>
-        ) : (
-          <div className="space-y-8">
-            {/* Danh sách đội đua */}
-            {renderTable('Teams', teams, teamColumns, (team) => team.teamId)}
-            {/* Danh sách tay đua */}
-            {renderTable('Drivers', drivers, driverColumns, (driver) => driver.driverId)}
+              {/*Menu dashboard cho Admin*/}
+              <li>
+                <a href="races" className="block py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
+                  Race
+                </a>
+              </li>
+              <li>
+                <a href="race-results" className="block py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
+                  Race Result
+                </a>
+              </li>
+
+
+
+            </ul>
           </div>
-        )}
+        </aside>
+
+        {/* Main content */}
+        <main className="flex-1 p-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-8">Admin Dashboard</h1>
+
+          {loading ? (
+            <p className="text-gray-600">Loading...</p>
+          ) : error ? (
+            <p className="text-red-500">{error}</p>
+          ) : (
+            <div className="space-y-8">
+              {renderTable('Teams', teams, teamColumns, (team) => team.teamId)}
+              {renderTable('Drivers', drivers, driverColumns, (driver) => driver.driverId)}
+            </div>
+          )}
+        </main>
       </div>
       <Footer />
     </div>
