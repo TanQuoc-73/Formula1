@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/solid';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
+import Link from 'next/link';
 
 // Định nghĩa các interface
 interface CurrentUser {
@@ -199,35 +200,30 @@ export default function Admin() {
             <h2 className="text-xl font-semibold text-gray-800">Admin Menu</h2>
             <ul className="mt-4 space-y-2">
               <li>
-                <a href="/admin" className="block py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
+                <Link href="/admin" className="block py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
                   Dashboard
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/teams" className="block py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
+                <Link href="/admin/teams" className="block py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
                   Team
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="drivers" className="block py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
+                <Link href="/admin/drivers" className="block py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
                   Driver
-                </a>
+                </Link>
               </li>
-
-              {/*Menu dashboard cho Admin*/}
               <li>
-                <a href="races" className="block py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
+                <Link href="/admin/races" className="block py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
                   Race
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="race-results" className="block py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
+                <Link href="/admin/race-results" className="block py-2 px-4 text-gray-700 hover:bg-gray-200 rounded">
                   Race Result
-                </a>
+                </Link>
               </li>
-
-
-
             </ul>
           </div>
         </aside>
