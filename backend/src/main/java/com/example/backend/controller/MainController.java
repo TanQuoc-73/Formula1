@@ -41,7 +41,12 @@ public class MainController {
     private UserRepository userRepository;
 
     @Autowired
+    private LoginHistoryRepository loginHistoryRepository;
+
+    @Autowired
     private UserService userService;
+
+
 
     @GetMapping("/")
     public String home() {
@@ -82,6 +87,11 @@ public class MainController {
         List<Team> teams = teamRepository.findAll();
         System.out.println("Teams fetched: " + teams);
         return teams;
+    }
+
+    @GetMapping("/login_history")
+    public List<LoginHistory> getAllLoginHistory() {
+        return loginHistoryRepository.findAll();
     }
 
     @GetMapping("/drivers")
