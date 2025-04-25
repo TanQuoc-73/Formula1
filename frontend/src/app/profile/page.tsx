@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -13,8 +12,8 @@ interface User {
   passWord: string;
   firstName: string;
   lastName: string;
-  role: string;
-  createdAt: string | null; // Cho phép createdAt là null
+  role: string; 
+  createdAt: string;
   email?: string;
 }
 
@@ -37,35 +36,6 @@ export default function Profile() {
     let parsedUser: User;
     try {
       parsedUser = JSON.parse(storedUser);
-      console.log('Parsed user:', parsedUser); // Debug dữ liệu user
-      console.log('Raw createdAt:', parsedUser.createdAt); // Debug createdAt
-
-      // Xử lý createdAt
-      if (parsedUser.createdAt) {
-        try {
-          const date = new Date(parsedUser.createdAt);
-          if (isNaN(date.getTime())) {
-            console.error('Invalid date:', parsedUser.createdAt);
-            parsedUser.createdAt = 'Không có dữ liệu';
-          } else {
-            parsedUser.createdAt = date.toLocaleString('vi-VN', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-            });
-            console.log('Formatted createdAt:', parsedUser.createdAt); // Debug giá trị đã định dạng
-          }
-        } catch (e) {
-          console.error('Lỗi khi parse createdAt:', e);
-          parsedUser.createdAt = 'Không có dữ liệu';
-        }
-      } else {
-        parsedUser.createdAt = 'Không có dữ liệu';
-      }
-
       setUser(parsedUser);
       setFormData({
         firstName: parsedUser.firstName,
@@ -75,6 +45,7 @@ export default function Profile() {
     } catch (err) {
       console.error('Lỗi khi parse user từ localStorage:', err);
       router.push('/signin');
+      return;
     }
   }, [router]);
 
@@ -98,11 +69,11 @@ export default function Profile() {
         body: JSON.stringify({
           userId: user.userId,
           userName: user.userName,
-          passWord: user.passWord, // Lưu ý: Không nên gửi passWord
+          passWord: user.passWord,
           firstName: formData.firstName,
           lastName: formData.lastName,
           role: user.role,
-          createdAt: user.createdAt === 'Không có dữ liệu' ? null : user.createdAt,
+          createdAt: user.createdAt,
         }),
       });
 
@@ -111,30 +82,6 @@ export default function Profile() {
       }
 
       const updatedUser: User = await response.json();
-      console.log('Updated user:', updatedUser); // Debug dữ liệu trả về
-      // Xử lý createdAt sau khi cập nhật
-      if (updatedUser.createdAt) {
-        try {
-          const date = new Date(updatedUser.createdAt);
-          if (isNaN(date.getTime())) {
-            updatedUser.createdAt = 'Không có dữ liệu';
-          } else {
-            updatedUser.createdAt = date.toLocaleString('vi-VN', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-            });
-          }
-        } catch {
-          updatedUser.createdAt = 'Không có dữ liệu';
-        }
-      } else {
-        updatedUser.createdAt = 'Không có dữ liệu';
-      }
-
       setUser(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setIsEditing(false);
@@ -150,29 +97,6 @@ export default function Profile() {
   const handleLogout = () => {
     localStorage.removeItem('user');
     router.push('/signin');
-  };
-
-  // Hàm định dạng createdAt
-  const formatCreatedAt = (createdAt: string | null) => {
-    if (!createdAt || createdAt === 'Không có dữ liệu') return 'Không có dữ liệu';
-    try {
-      const date = new Date(createdAt);
-      if (isNaN(date.getTime())) {
-        console.error('Invalid date in formatCreatedAt:', createdAt);
-        return 'Không có dữ liệu';
-      }
-      return date.toLocaleString('vi-VN', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      });
-    } catch (e) {
-      console.error('Lỗi khi format createdAt:', e);
-      return 'Không có dữ liệu';
-    }
   };
 
   return (
@@ -228,14 +152,13 @@ export default function Profile() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Ngày tạo</label>
-                    <p className="mt-1 text-lg text-gray-800">{formatCreatedAt(user.createdAt)}</p>
+                    <p className="mt-1 text-lg text-gray-800">{user.createdAt}</p>
                   </div>
                 </div>
                 <div className="flex justify-center space-x-4 mt-8">
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
-                  >
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300">
                     Chỉnh sửa
                   </button>
                   <button
@@ -279,7 +202,7 @@ export default function Profile() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Ngày tạo</label>
-                    <p className="mt-1 text-lg text-gray-800">{formatCreatedAt(user.createdAt)}</p>
+                    <p className="mt-1 text-lg text-gray-800">{user.createdAt}</p>
                   </div>
                 </div>
                 <div className="flex justify-center space-x-4 mt-8">
