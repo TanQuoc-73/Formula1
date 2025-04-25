@@ -24,7 +24,7 @@ export default function NavBar() {
     localStorage.removeItem('user');
     setUser(null);
     setIsDropdownOpen(false);
-    router.push('/'); // Chuyển hướng về trang chủ
+    router.push('/'); 
   };
 
   return (

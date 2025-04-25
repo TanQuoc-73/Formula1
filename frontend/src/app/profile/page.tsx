@@ -12,7 +12,7 @@ interface User {
   passWord: string;
   firstName: string;
   lastName: string;
-  role: string; // role là chuỗi
+  role: string; 
   createdAt: string;
   email?: string;
 }
