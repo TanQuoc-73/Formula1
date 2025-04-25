@@ -158,8 +158,7 @@ export default function Profile() {
                 <div className="flex justify-center space-x-4 mt-8">
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300"
-                  >
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300">
                     Chỉnh sửa
                   </button>
                   <button
