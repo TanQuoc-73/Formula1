@@ -28,12 +28,7 @@ public class UserService {
         user.setPassWord(passwordEncoder.encode(user.getPassWord()));
 
         // Thiết lập giá trị mặc định
-
-
-        // user.setRole(User.Role.QuanLy); // Vai trò mặc định
-
-
-        
+        // user.setRole(User.Role.QuanLy); // Vai trò mặc định (để nguyên đoạn comment của bạn)
         user.setCreatedAt(Timestamp.valueOf(LocalDateTime.now())); // Thời gian tạo
 
         // Lưu user vào database
@@ -51,5 +46,31 @@ public class UserService {
         }
 
         return user;
+    }
+
+    public User updateUser(Integer id, User updatedUser) {
+        // Tìm user hiện tại theo ID
+        User existingUser = userRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + id));
+
+        // Kiểm tra xem username mới có bị trùng không (nếu username thay đổi)
+        if (!existingUser.getUserName().equals(updatedUser.getUserName()) &&
+            userRepository.findByUserName(updatedUser.getUserName()).isPresent()) {
+            throw new RuntimeException("Tên người dùng đã tồn tại");
+        }
+
+        // Cập nhật các trường
+        existingUser.setUserName(updatedUser.getUserName());
+        // Nếu mật khẩu thay đổi, mã hóa lại
+        if (!updatedUser.getPassWord().equals(existingUser.getPassWord())) {
+            existingUser.setPassWord(passwordEncoder.encode(updatedUser.getPassWord()));
+        }
+        existingUser.setFirstName(updatedUser.getFirstName());
+        existingUser.setLastName(updatedUser.getLastName());
+        existingUser.setRole(updatedUser.getRole());
+        existingUser.setCreatedAt(updatedUser.getCreatedAt());
+
+        // Lưu user đã cập nhật vào database
+        return userRepository.save(existingUser);
     }
 }

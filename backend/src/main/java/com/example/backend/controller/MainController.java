@@ -46,8 +46,6 @@ public class MainController {
     @Autowired
     private UserService userService;
 
-
-
     @GetMapping("/")
     public String home() {
         return "Welcome to F1 API!";
@@ -57,7 +55,7 @@ public class MainController {
     public ResponseEntity<?> register(@RequestBody User user) {
         try {
             User registeredUser = userService.registerUser(user);
-            return ResponseEntity.ok(Map.of("message", "dang ký thành công", "userName", registeredUser.getUserName()));
+            return ResponseEntity.ok(Map.of("message", "Đăng ký thành công", "userName", registeredUser.getUserName()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
@@ -127,5 +125,15 @@ public class MainController {
     @GetMapping("/users")
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    @PutMapping("/users/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable("id") Integer id, @RequestBody User updatedUser) {
+        try {
+            User user = userService.updateUser(id, updatedUser);
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        }
     }
 }
