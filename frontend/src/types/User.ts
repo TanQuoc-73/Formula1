@@ -5,6 +5,6 @@ export interface User {
     firstName: string;
     lastName: string;
     role: string;
-    createAt: string;
+    createdAt: string;
     email?: string;
 }

@@ -28,7 +28,7 @@ export default function ProfileInfo({ user, onEdit, onLogout }: ProfileInfoProps
         </div>
         <div>
           <label className="text-sm font-medium text-gray-600">Ngày tạo</label>
-          <p className="mt-1 text-lg text-gray-800">{user.createAt}</p>
+          <p className="mt-1 text-lg text-gray-800">{user.createdAt}</p>
         </div>
       </div>
       <div className="flex justify-center space-x-4 mt-8">
