@@ -1,14 +1,10 @@
 package com.example.backend.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
-@Table(name = "Teams") 
+@Table(name = "Teams")
 public class Team {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +23,12 @@ public class Team {
     @Column(name = "totalpoints")
     private Integer totalPoints;
 
+    // Thêm quan hệ OneToMany với Driver
+    @OneToMany
+    @JoinColumn(name = "team_id") // Cột team_id trong bảng Driver
+    private List<Driver> drivers;
+
+    // Constructors
     public Team() {
     }
 
@@ -76,5 +78,14 @@ public class Team {
 
     public void setTotalPoints(Integer totalPoints) {
         this.totalPoints = totalPoints;
+    }
+
+    // Getter và Setter cho drivers
+    public List<Driver> getDrivers() {
+        return drivers;
+    }
+
+    public void setDrivers(List<Driver> drivers) {
+        this.drivers = drivers;
     }
 }

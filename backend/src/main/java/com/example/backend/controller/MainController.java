@@ -126,6 +126,17 @@ public class MainController {
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
+    
+    @GetMapping("/teams-with-drivers")
+public List<Team> getTeamsWithDrivers() {
+    List<Team> teams = teamRepository.findAll();
+    for (Team team : teams) {
+        List<Driver> drivers = driverRepository.findByTeamTeamId(team.getTeamId());
+        team.setDrivers(drivers);
+    }
+    System.out.println("Teams with drivers fetched: " + teams);
+    return teams;
+}
 
     @PutMapping("/users/{id}")
     public ResponseEntity<?> updateUser(@PathVariable("id") Integer id, @RequestBody User updatedUser) {

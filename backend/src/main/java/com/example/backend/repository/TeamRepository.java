@@ -7,4 +7,5 @@ import com.example.backend.model.Team;
 
 @Repository
 public interface TeamRepository extends JpaRepository<Team, Integer>{
+    
 }
