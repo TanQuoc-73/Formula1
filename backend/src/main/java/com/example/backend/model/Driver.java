@@ -10,6 +10,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "Drivers")
 public class Driver {
@@ -20,6 +22,7 @@ public class Driver {
 
     @ManyToOne
     @JoinColumn(name = "TeamID")
+    @JsonIgnore
     private Team team;
 
     @Column(name = "drivername", nullable = false, length = 100)
