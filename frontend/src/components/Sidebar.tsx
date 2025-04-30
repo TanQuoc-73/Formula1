@@ -1,4 +1,6 @@
 // components/Sidebar.tsx
+
+// Sidebar của phần Admin DashBoard
 import Link from 'next/link';
 
 export default function Sidebar() {
