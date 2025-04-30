@@ -22,7 +22,6 @@ export const useProfile = () => {
     let parsedUser: User;
     try {
       parsedUser = JSON.parse(storedUser);
-      // Kiểm tra và sửa createdAt nếu không hợp lệ
       const createdAtDate = new Date(parsedUser.createdAt);
       if (isNaN(createdAtDate.getTime())) {
         console.warn('Invalid createdAt in localStorage, setting to current time:', parsedUser.createdAt);
@@ -51,7 +50,6 @@ export const useProfile = () => {
     if (!user) return;
 
     try {
-      // Kiểm tra và định dạng createdAt
       let formattedCreatedAt: string;
       const createdAtDate = new Date(user.createdAt);
       if (isNaN(createdAtDate.getTime())) {
@@ -83,7 +81,6 @@ export const useProfile = () => {
       }
 
       const updatedUser: User = await response.json();
-      // Kiểm tra và định dạng createdAt từ phản hồi
       const updatedCreatedAt = new Date(updatedUser.createdAt);
       if (isNaN(updatedCreatedAt.getTime())) {
         console.warn('Invalid createdAt in response, using current time as fallback:', updatedUser.createdAt);
