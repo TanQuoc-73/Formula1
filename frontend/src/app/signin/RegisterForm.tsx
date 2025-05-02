@@ -41,7 +41,7 @@ export default function RegisterForm({ formData, handleInputChange, handleSubmit
         <Input
           type="password"
           id="password"
-          value={formData.passWord}
+          value={formData.password}
           onChange={handleInputChange}
           required
           placeholder="Create a password"

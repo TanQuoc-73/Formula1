@@ -31,7 +31,7 @@ export default function LoginForm({ formData, handleInputChange, handleSubmit, l
         <Input
           type="password"
           id="password"
-          value={formData.passWord}
+          value={formData.password}
           onChange={handleInputChange}
           required
           placeholder="Enter your password"
