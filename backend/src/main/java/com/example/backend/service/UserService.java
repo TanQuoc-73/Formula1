@@ -2,15 +2,21 @@ package com.example.backend.service;
 
 import com.example.backend.model.User;
 import com.example.backend.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import jakarta.validation.constraints.NotBlank;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Service
 public class UserService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private static final User.Role DEFAULT_ROLE = User.Role.ThanhVien;
 
     @Autowired
     private UserRepository userRepository;
@@ -18,59 +24,72 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public User registerUser(User user) {
-        // Kiểm tra xem username đã tồn tại chưa
-        if (userRepository.findByUserName(user.getUserName()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+    // Custom exceptions
+    public static class UsernameAlreadyExistsException extends RuntimeException {
+        public UsernameAlreadyExistsException(String message) {
+            super(message);
+        }
+    }
+
+    public static class InvalidCredentialsException extends RuntimeException {
+        public InvalidCredentialsException(String message) {
+            super(message);
+        }
+    }
+
+    public static class IllegalArgumentException extends RuntimeException {
+        public IllegalArgumentException(String message) {
+            super(message);
+        }
+    }
+
+    public User registerUser(@NotBlank(message = "Username cannot be empty") String userName,
+                            @NotBlank(message = "Password cannot be empty") String password) {
+        logger.info("Registering user: {}", userName);
+
+        if (userRepository.findByUserName(userName).isPresent()) {
+            throw new UsernameAlreadyExistsException("Username already exists");
         }
 
-        // Mã hóa mật khẩu
-        user.setPassWord(passwordEncoder.encode(user.getPassWord()));
+        User user = new User();
+        user.setUserName(userName);
+        user.setPassWord(passwordEncoder.encode(password));
+        user.setRole(DEFAULT_ROLE);
+        user.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
-        // Thiết lập giá trị mặc định
-        user.setRole(User.Role.ThanhVien); // Vai trò mặc định (để nguyên đoạn comment của bạn)
-        user.setCreatedAt(Timestamp.valueOf(LocalDateTime.now())); // Thời gian tạo
-
-        // Lưu user vào database
         return userRepository.save(user);
     }
 
-    public User loginUser(String userName, String password) {
-        // Tìm user theo username
-        User user = userRepository.findByUserName(userName)
-            .orElseThrow(() -> new RuntimeException("Invalid username or password"));
+    public User loginUser(@NotBlank(message = "Username cannot be empty") String userName,
+                         @NotBlank(message = "Password cannot be empty") String password) {
+        logger.info("Attempting login for user: {}", userName);
 
-        // So sánh mật khẩu nhập vào với mật khẩu đã hash
-        if (!passwordEncoder.matches(password, user.getPassWord())) {
-            throw new RuntimeException("Invalid username or password");
-        }
-
-        return user;
+        return userRepository.findByUserName(userName)
+                .filter(user -> passwordEncoder.matches(password, user.getPassWord()))
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
     }
 
     public User updateUser(Integer id, User updatedUser) {
-        // Tìm user hiện tại theo ID
-        User existingUser = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + id));
+        logger.info("Updating user with ID: {}", id);
 
-        // Kiểm tra xem username mới có bị trùng không (nếu username thay đổi)
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng với ID: " + id));
+
+        // Kiểm tra username trùng lặp nếu có thay đổi
         if (!existingUser.getUserName().equals(updatedUser.getUserName()) &&
             userRepository.findByUserName(updatedUser.getUserName()).isPresent()) {
-            throw new RuntimeException("Tên người dùng đã tồn tại");
+            throw new UsernameAlreadyExistsException("Tên người dùng đã tồn tại");
         }
 
-        // Cập nhật các trường
+        // Cập nhật thông tin
         existingUser.setUserName(updatedUser.getUserName());
-        // Nếu mật khẩu thay đổi, mã hóa lại
-        if (!updatedUser.getPassWord().equals(existingUser.getPassWord())) {
+        if (updatedUser.getPassWord() != null && !updatedUser.getPassWord().isEmpty()) {
             existingUser.setPassWord(passwordEncoder.encode(updatedUser.getPassWord()));
         }
         existingUser.setFirstName(updatedUser.getFirstName());
         existingUser.setLastName(updatedUser.getLastName());
         existingUser.setRole(updatedUser.getRole());
-        existingUser.setCreatedAt(updatedUser.getCreatedAt());
 
-        // Lưu user đã cập nhật vào database
         return userRepository.save(existingUser);
     }
 }

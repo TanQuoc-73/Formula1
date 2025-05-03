@@ -54,12 +54,12 @@ public class MainController {
     @PostMapping("/auth/register")
     public ResponseEntity<?> register(@RequestBody User user) {
         try {
-            User registeredUser = userService.registerUser(user);
+            User registeredUser = userService.registerUser(user.getUserName(), user.getPassWord());
             return ResponseEntity.ok(Map.of("message", "Đăng ký thành công", "userName", registeredUser.getUserName()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
-    }
+}
 
     @PostMapping("/auth/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
