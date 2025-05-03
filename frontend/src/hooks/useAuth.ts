@@ -53,7 +53,7 @@ export const useAuth = () => {
         ? { userName: formData.email, password: formData.password }
         : {
             userName: formData.userName || formData.email, 
-            password: formData.password,
+            passWord: formData.password, // Sửa ở đây: dùng passWord thay vì password
             firstName: formData.firstName,
             lastName: formData.lastName,
           };

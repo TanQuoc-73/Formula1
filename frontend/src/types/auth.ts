@@ -7,7 +7,7 @@ export interface FormData {
 }
 export interface AuthBody {
     userName: string;
-    password?: string;
+    passWord?: string;
     firstName?: string;
     lastName?: string;
 
