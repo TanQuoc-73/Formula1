@@ -3,6 +3,7 @@ package com.example.backend.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "Users")
@@ -12,9 +13,11 @@ public class User {
     @Column(name = "UserID")
     private Integer userId;
 
+    @NotBlank(message = "Username cannot be empty")
     @Column(name = "username")
     private String userName;
 
+    @NotBlank(message = "Password cannot be empty")
     @Column(name = "password")
     private String passWord;
 
