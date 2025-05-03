@@ -19,7 +19,7 @@ export default function RegisterForm({ formData, handleInputChange, handleSubmit
         <Input
           type="text"
           id="name"
-          value={formData.name}
+          value={formData.firstName}
           onChange={handleInputChange}
           required
           placeholder="Enter your full name"
@@ -30,7 +30,7 @@ export default function RegisterForm({ formData, handleInputChange, handleSubmit
         <Input
           type="email"
           id="email"
-          value={formData.email}
+          value={formData.userName}
           onChange={handleInputChange}
           required
           placeholder="Enter your email"
@@ -41,7 +41,7 @@ export default function RegisterForm({ formData, handleInputChange, handleSubmit
         <Input
           type="password"
           id="password"
-          value={formData.password}
+          value={formData.passWord}
           onChange={handleInputChange}
           required
           placeholder="Create a password"
