@@ -3,48 +3,55 @@ package com.example.backend.controller;
 import com.example.backend.model.*;
 import com.example.backend.repository.*;
 import com.example.backend.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "http://localhost:3000")
 public class MainController {
 
-    @Autowired
-    private TeamRepository teamRepository;
+    private final TeamRepository teamRepository;
+    private final DriverRepository driverRepository;
+    private final TrackRepository trackRepository;
+    private final RaceRepository raceRepository;
+    private final RaceResultRepository raceResultRepository;
+    private final ScheduleRepository scheduleRepository;
+    private final FastestLapRepository fastestLapRepository;
+    private final UserRepository userRepository;
+    private final LoginHistoryRepository loginHistoryRepository;
+    private final UserService userService;
 
-    @Autowired
-    private DriverRepository driverRepository;
-
-    @Autowired
-    private TrackRepository trackRepository;
-
-    @Autowired
-    private RaceRepository raceRepository;
-
-    @Autowired
-    private RaceResultRepository raceResultRepository;
-
-    @Autowired
-    private ScheduleRepository scheduleRepository;
-
-    @Autowired
-    private FastestLapRepository fastestLapRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private LoginHistoryRepository loginHistoryRepository;
-
-    @Autowired
-    private UserService userService;
+    public MainController(
+            TeamRepository teamRepository,
+            DriverRepository driverRepository,
+            TrackRepository trackRepository,
+            RaceRepository raceRepository,
+            RaceResultRepository raceResultRepository,
+            ScheduleRepository scheduleRepository,
+            FastestLapRepository fastestLapRepository,
+            UserRepository userRepository,
+            LoginHistoryRepository loginHistoryRepository,
+            UserService userService) {
+        this.teamRepository = teamRepository;
+        this.driverRepository = driverRepository;
+        this.trackRepository = trackRepository;
+        this.raceRepository = raceRepository;
+        this.raceResultRepository = raceResultRepository;
+        this.scheduleRepository = scheduleRepository;
+        this.fastestLapRepository = fastestLapRepository;
+        this.userRepository = userRepository;
+        this.loginHistoryRepository = loginHistoryRepository;
+        this.userService = userService;
+    }
 
     @GetMapping("/")
     public String home() {
@@ -52,31 +59,55 @@ public class MainController {
     }
 
     @PostMapping("/auth/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
+    public ResponseEntity<?> register(@Valid @RequestBody User user, BindingResult result) {
+        // Xử lý lỗi validation
+        if (result.hasErrors()) {
+            String errorMessage = result.getFieldErrors().stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.joining(", "));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Validation failed: " + errorMessage));
+        }
+
         try {
             User registeredUser = userService.registerUser(user.getUserName(), user.getPassWord());
-            return ResponseEntity.ok(Map.of("message", "Đăng ký thành công", "userName", registeredUser.getUserName()));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("message", "Đăng ký thành công", "userName", registeredUser.getUserName()));
+        } catch (UserService.UsernameAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Username already exists"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Invalid input: " + e.getMessage()));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
-}
+    }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
+    public ResponseEntity<?> login(@RequestBody @Valid LoginRequest loginRequest) {
         try {
-            String userName = loginRequest.get("userName");
-            String password = loginRequest.get("password");
-            User user = userService.loginUser(userName, password);
+            User user = userService.loginUser(loginRequest.getUserName(), loginRequest.getPassword());
+
+            LoginHistory loginHistory = new LoginHistory();
+            loginHistory.setUser(user);
+            loginHistoryRepository.save(loginHistory);
+
             return ResponseEntity.ok(Map.of(
-                "message", "Đăng nhập thành công",
-                "userId", user.getUserId(),
-                "userName", user.getUserName(),
-                "firstName", user.getFirstName(),
-                "lastName", user.getLastName(),
-                "role", user.getRole().name()
+                    "message", "Đăng nhập thành công",
+                    "userId", user.getUserId(),
+                    "userName", user.getUserName(),
+                    "firstName", user.getFirstName() != null ? user.getFirstName() : "",
+                    "lastName", user.getLastName() != null ? user.getLastName() : "",
+                    "role", user.getRole().name()
             ));
+        } catch (UserService.InvalidCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid username or password"));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
 
@@ -126,25 +157,67 @@ public class MainController {
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
-    
+
     @GetMapping("/teams-with-drivers")
-public List<Team> getTeamsWithDrivers() {
-    List<Team> teams = teamRepository.findAll();
-    for (Team team : teams) {
-        List<Driver> drivers = driverRepository.findByTeamTeamId(team.getTeamId());
-        team.setDrivers(drivers);
+    public List<Team> getTeamsWithDrivers() {
+        // Sử dụng fetch join trong repository để tối ưu (nếu cần)
+        List<Team> teams = teamRepository.findAll();
+        for (Team team : teams) {
+            List<Driver> drivers = driverRepository.findByTeamTeamId(team.getTeamId());
+            team.setDrivers(drivers);
+        }
+        System.out.println("Teams with drivers fetched: " + teams);
+        return teams;
     }
-    System.out.println("Teams with drivers fetched: " + teams);
-    return teams;
-}
 
     @PutMapping("/users/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable("id") Integer id, @RequestBody User updatedUser) {
+    public ResponseEntity<?> updateUser(@PathVariable("id") Integer id, @Valid @RequestBody User updatedUser, BindingResult result) {
+        if (result.hasErrors()) {
+            String errorMessage = result.getFieldErrors().stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.joining(", "));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Validation failed: " + errorMessage));
+        }
+
         try {
             User user = userService.updateUser(id, updatedUser);
             return ResponseEntity.ok(user);
+        } catch (UserService.UsernameAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Username already exists"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "User not found: " + e.getMessage()));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
+    }
+}
+
+// DTO cho login request
+class LoginRequest {
+    @NotBlank(message = "Username cannot be empty")
+    private String userName;
+
+    @NotBlank(message = "Password cannot be empty")
+    private String password;
+
+    // Getters và Setters
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

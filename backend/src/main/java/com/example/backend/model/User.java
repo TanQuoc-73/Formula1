@@ -3,24 +3,28 @@ package com.example.backend.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import java.sql.Timestamp;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "Users")
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "UserID")
     private Integer userId;
 
     @NotBlank(message = "Username cannot be empty")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     @Column(name = "username")
     private String userName;
 
     @NotBlank(message = "Password cannot be empty")
     @Column(name = "password")
-    @JsonProperty("rawPassword") // Thêm annotation này để ánh xạ "rawPassword" từ JSON vào thuộc tính passWord
+    @JsonProperty("passWord") // Ánh xạ từ "passWord" trong JSON
     private String passWord;
 
     @Column(name = "firstname")
@@ -110,6 +114,7 @@ public class User {
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
+
     @Override
     public String toString() {
         return "User{" +
