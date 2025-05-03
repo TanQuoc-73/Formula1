@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-    private static final User.Role DEFAULT_ROLE = User.Role.ThanhVien;
+    private static final User.Role DEFAULT_ROLE = User.Role.ThanhVien; //mặc định là thành viên
 
     @Autowired
     private UserRepository userRepository;

@@ -1,6 +1,7 @@
 package com.example.backend.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
 import jakarta.validation.constraints.NotBlank;
@@ -19,6 +20,7 @@ public class User {
 
     @NotBlank(message = "Password cannot be empty")
     @Column(name = "password")
+    @JsonProperty("rawPassword") // Thêm annotation này để ánh xạ "rawPassword" từ JSON vào thuộc tính passWord
     private String passWord;
 
     @Column(name = "firstname")
@@ -107,5 +109,16 @@ public class User {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+    @Override
+    public String toString() {
+        return "User{" +
+                "userId=" + userId +
+                ", userName='" + userName + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", role=" + role +
+                ", createdAt=" + createdAt +
+                '}';
     }
 }
