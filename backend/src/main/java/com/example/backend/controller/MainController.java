@@ -70,7 +70,13 @@ public class MainController {
         }
 
         try {
-            User registeredUser = userService.registerUser(user.getUserName(), user.getPassWord());
+            // Sửa: truyền thêm firstName và lastName
+            User registeredUser = userService.registerUser(
+                    user.getUserName(),
+                    user.getPassWord(),
+                    user.getFirstName(),
+                    user.getLastName()
+            );
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of("message", "Đăng ký thành công", "userName", registeredUser.getUserName()));
         } catch (UserService.UsernameAlreadyExistsException e) {

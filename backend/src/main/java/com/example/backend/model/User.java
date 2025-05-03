@@ -24,7 +24,7 @@ public class User {
 
     @NotBlank(message = "Password cannot be empty")
     @Column(name = "password")
-    @JsonProperty("passWord") // Ánh xạ từ "passWord" trong JSON
+    @JsonProperty("passWord")
     private String passWord;
 
     @Column(name = "firstname")

@@ -43,8 +43,12 @@ public class UserService {
         }
     }
 
-    public User registerUser(@NotBlank(message = "Username cannot be empty") String userName,
-                            @NotBlank(message = "Password cannot be empty") String password) {
+    public User registerUser(
+        @NotBlank(message = "Username cannot be empty") String userName,
+        @NotBlank(message = "Password cannot be empty") String password,
+        String firstName,
+        String lastName
+    ) {
         logger.info("Registering user: {}", userName);
 
         if (userRepository.findByUserName(userName).isPresent()) {
@@ -54,6 +58,10 @@ public class UserService {
         User user = new User();
         user.setUserName(userName);
         user.setPassWord(passwordEncoder.encode(password));
+        // Thêm thông tin firstName và lastName
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        
         user.setRole(DEFAULT_ROLE);
         user.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
 
