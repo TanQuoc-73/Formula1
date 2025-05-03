@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FormData, AuthBody, User } from '@/types/auth';
+import { FormData, AuthBody } from '@/types/auth';
+import { User } from '@/types/User';
 
 export const useAuth = () => {
   const [isLogin, setIsLogin] = useState(true);

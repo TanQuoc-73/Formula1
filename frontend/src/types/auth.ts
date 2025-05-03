@@ -9,11 +9,7 @@ export interface AuthBody {
     userName: string;
     passWord?: string;
     firstName?: string;
-    lastName?: string;
+    lastname?: string;
 
 }
 
-export interface User {
-    role: 'Admin' | 'QuanLy'| 'ThanhVien'| string;
-
-}
