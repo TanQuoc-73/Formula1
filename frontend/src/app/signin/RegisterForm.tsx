@@ -15,25 +15,36 @@ export default function RegisterForm({ formData, handleInputChange, handleSubmit
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Full Name</Label>
+        <Label htmlFor="firstName">First Name</Label>
         <Input
           type="text"
-          id="name"
-          value={formData.firstName}
+          id="firstName"
+          value={formData.firstName || ''} // Đảm bảo giá trị mặc định
           onChange={handleInputChange}
           required
-          placeholder="Enter your full name"
+          placeholder="Enter your first name"
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="lastName">Last Name</Label>
         <Input
-          type="email"
-          id="email"
-          value={formData.userName}
+          type="text"
+          id="lastName"
+          value={formData.lastName || ''} // Đảm bảo giá trị mặc định
           onChange={handleInputChange}
           required
-          placeholder="Enter your email"
+          placeholder="Enter your last name"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="userName">Email/Username</Label>
+        <Input
+          type="email"
+          id="userName"
+          value={formData.userName || ''} // Đảm bảo giá trị mặc định
+          onChange={handleInputChange}
+          required
+          placeholder="Enter your email or username"
         />
       </div>
       <div className="space-y-2">
@@ -41,7 +52,7 @@ export default function RegisterForm({ formData, handleInputChange, handleSubmit
         <Input
           type="password"
           id="password"
-          value={formData.passWord}
+          value={formData.password || ''} // Đảm bảo giá trị mặc định
           onChange={handleInputChange}
           required
           placeholder="Create a password"

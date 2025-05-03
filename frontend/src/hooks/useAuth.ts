@@ -5,8 +5,10 @@ import { FormData, AuthBody, User } from '@/types/auth';
 export const useAuth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState<FormData>({
-    name: '',
     email: '',
+    firstName: '',
+    lastName: '',
+    userName: '',
     password: '',
   });
   const [error, setError] = useState('');
@@ -22,6 +24,27 @@ export const useAuth = () => {
     setLoading(true);
     setError('');
 
+    if (isLogin) {
+        // Với đăng nhập, chỉ cần kiểm tra email và password
+        if (!formData.email.trim() || !formData.password.trim()) {
+            setError('Email and Password are required');
+            setLoading(false);
+            return;
+        }
+    } else {
+        // Với đăng ký, yêu cầu tất cả các trường
+        if (
+          !formData.userName.trim() ||
+          !formData.password.trim() ||
+          !formData.firstName.trim() ||
+          !formData.lastName.trim()
+        ) {
+            setError('All fields are required');
+            setLoading(false);
+            return;
+        }
+    }
+
     try {
       const url = isLogin
         ? 'http://localhost:8080/api/auth/login'
@@ -29,23 +52,25 @@ export const useAuth = () => {
       const body: AuthBody = isLogin
         ? { userName: formData.email, password: formData.password }
         : {
-            userName: formData.email,
+            userName: formData.userName || formData.email, 
             password: formData.password,
-            firstName: formData.name.split(' ').slice(0, -1).join(' ') || formData.name,
-            lastName: formData.name.split(' ').slice(-1)[0] || '',
+            firstName: formData.firstName,
+            lastName: formData.lastName,
           };
 
+      console.log('Sending body:', body); // Debug
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
 
-      const data: User = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Something went wrong');
       }
 
+      const data: User = await response.json();
       if (isLogin) {
         localStorage.setItem('user', JSON.stringify(data));
         switch (data.role) {
