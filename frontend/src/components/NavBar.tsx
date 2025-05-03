@@ -58,6 +58,11 @@ export default function NavBar() {
               </Link>
             </li>
             <li>
+              <Link href="/races" className="hover:text-red-200">
+                Race
+              </Link>
+            </li>
+            <li>
               <Link href="/about" className="hover:text-red-200">
                 About
               </Link>
