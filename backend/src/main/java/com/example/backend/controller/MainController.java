@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.model.*;
 import com.example.backend.repository.*;
+import com.example.backend.service.TeamService;
 import com.example.backend.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,7 @@ public class MainController {
     private final UserRepository userRepository;
     private final LoginHistoryRepository loginHistoryRepository;
     private final UserService userService;
+    private final TeamService teamService;
 
     public MainController(
             TeamRepository teamRepository,
@@ -40,7 +42,8 @@ public class MainController {
             FastestLapRepository fastestLapRepository,
             UserRepository userRepository,
             LoginHistoryRepository loginHistoryRepository,
-            UserService userService) {
+            UserService userService,
+            TeamService teamService) {
         this.teamRepository = teamRepository;
         this.driverRepository = driverRepository;
         this.trackRepository = trackRepository;
@@ -51,6 +54,7 @@ public class MainController {
         this.userRepository = userRepository;
         this.loginHistoryRepository = loginHistoryRepository;
         this.userService = userService;
+        this.teamService = teamService;
     }
 
     @GetMapping("/")
@@ -60,7 +64,6 @@ public class MainController {
 
     @PostMapping("/auth/register")
     public ResponseEntity<?> register(@Valid @RequestBody User user, BindingResult result) {
-        // Xử lý lỗi validation
         if (result.hasErrors()) {
             String errorMessage = result.getFieldErrors().stream()
                     .map(error -> error.getField() + ": " + error.getDefaultMessage())
@@ -70,7 +73,6 @@ public class MainController {
         }
 
         try {
-            // Sửa: truyền thêm firstName và lastName
             User registeredUser = userService.registerUser(
                     user.getUserName(),
                     user.getPassWord(),
@@ -119,9 +121,54 @@ public class MainController {
 
     @GetMapping("/teams")
     public List<Team> getAllTeams() {
-        List<Team> teams = teamRepository.findAll();
-        System.out.println("Teams fetched: " + teams);
-        return teams;
+        return teamService.getAllTeams();
+    }
+
+    @PostMapping("/teams")
+    public ResponseEntity<?> createTeam(@Valid @RequestBody Team team, BindingResult result) {
+        if (result.hasErrors()) {
+            String errorMessage = result.getFieldErrors().stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.joining(", "));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Validation failed: " + errorMessage));
+        }
+        try {
+            Team createdTeam = teamService.createTeam(team);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdTeam);
+        } catch(RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/teams/{teamId}")
+    public ResponseEntity<?> updateTeam(@PathVariable Integer teamId, @Valid @RequestBody Team updatedTeam, BindingResult result) {
+        if (result.hasErrors()) {
+            String errorMessage = result.getFieldErrors().stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.joining(", "));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Validation failed: " + errorMessage));
+        }
+        try {
+            Team team = teamService.updateTeam(teamId, updatedTeam);
+            return ResponseEntity.ok(team);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/teams/{teamId}")
+    public ResponseEntity<?> deleteTeam(@PathVariable Integer teamId) {
+        try {
+            teamService.deleteTeam(teamId);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     @GetMapping("/login_history")
@@ -166,7 +213,6 @@ public class MainController {
 
     @GetMapping("/teams-with-drivers")
     public List<Team> getTeamsWithDrivers() {
-        // Sử dụng fetch join trong repository để tối ưu (nếu cần)
         List<Team> teams = teamRepository.findAll();
         for (Team team : teams) {
             List<Driver> drivers = driverRepository.findByTeamTeamId(team.getTeamId());
@@ -177,7 +223,7 @@ public class MainController {
     }
 
     @PutMapping("/users/{userId}")
-    public ResponseEntity<?> updateUser(@PathVariable("id") Integer id, @Valid @RequestBody User updatedUser, BindingResult result) {
+    public ResponseEntity<?> updateUser(@PathVariable("userId") Integer id, @Valid @RequestBody User updatedUser, BindingResult result) {
         if (result.hasErrors()) {
             String errorMessage = result.getFieldErrors().stream()
                     .map(error -> error.getField() + ": " + error.getDefaultMessage())
@@ -210,7 +256,6 @@ class LoginRequest {
     @NotBlank(message = "Password cannot be empty")
     private String password;
 
-    // Getters và Setters
     public String getUserName() {
         return userName;
     }
