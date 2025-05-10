@@ -34,7 +34,9 @@ public class SecurityConfig {
                     "/api/schedules", 
                     "/api/fastest-laps",
                     "/api/login_history",
-                    "/api/teams-with-drivers"
+                    "/api/teams-with-drivers",
+                    "/api/teams/{teamId}",
+                    "/api/teams/{id}"
                 ).permitAll() 
                 .anyRequest().authenticated() 
             )
