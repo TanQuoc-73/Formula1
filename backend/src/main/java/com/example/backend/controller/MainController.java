@@ -176,7 +176,7 @@ public class MainController {
         return teams;
     }
 
-    @PutMapping("/users/{id}")
+    @PutMapping("/users/{userId}")
     public ResponseEntity<?> updateUser(@PathVariable("id") Integer id, @Valid @RequestBody User updatedUser, BindingResult result) {
         if (result.hasErrors()) {
             String errorMessage = result.getFieldErrors().stream()
