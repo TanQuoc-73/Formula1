@@ -66,6 +66,13 @@
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 
+
+		<!-- Dependency cho spring webweb-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
 		
 
 	</dependencies>

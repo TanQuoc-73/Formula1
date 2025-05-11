@@ -55,6 +55,7 @@ public class MainController {
         this.loginHistoryRepository = loginHistoryRepository;
         this.userService = userService;
         this.teamService = teamService;
+        // this.AIService = aiService;
     }
 
     @GetMapping("/")
