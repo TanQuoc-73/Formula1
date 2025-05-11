@@ -1,28 +1,28 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Team } from "@/types/team";
-import { fetchTeams } from "@/services/teamsService";
+import { getTeamsAPI } from "@/services/teamsService";
 
-export function useTeams() {
+export const useTeams = () => {
   const [teams, setTeams] = useState<Team[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const loadTeams = useCallback(async () => {
+  const fetchTeams = async () => {
     setLoading(true);
     try {
-      const data = await fetchTeams();
+      const data = await getTeamsAPI();
       setTeams(data);
-      setError("");
+      setError(null);
     } catch (err: any) {
-      setError(err.message || "Không thể tải danh sách đội.");
+      setError(err.message || "Failed to load teams");
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    loadTeams();
-  }, [loadTeams]);
+    fetchTeams();
+  }, []);
 
-  return { teams, loading, error, refreshTeams: loadTeams };
-}
+  return { teams, loading, error, refreshTeams: fetchTeams };
+};

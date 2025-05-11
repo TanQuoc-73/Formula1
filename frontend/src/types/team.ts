@@ -4,5 +4,13 @@ export interface Team {
   baseLocation: string;
   numChampTitles: number;
   totalPoints: number;
-  drivers?: any[];
+  drivers: Driver[];
+}
+
+export interface Driver {
+  driverId: number;
+  driverName: string;
+  nationality: string;
+  birthDate: string;
+  driverPoints: number;
 }

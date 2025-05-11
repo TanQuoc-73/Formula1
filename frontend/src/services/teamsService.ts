@@ -1,32 +1,61 @@
 import { Team } from "@/types/team";
 
-export async function fetchTeams(): Promise<Team[]> {
-  const res = await fetch("http://localhost:8080/api/teams");
-  if (!res.ok) {
-    throw new Error(`HTTP error! Status: ${res.status}`);
-  }
-  return await res.json();
-}
+// Lấy danh sách đội
+export const getTeamsAPI = async (): Promise<Team[]> => {
+  const response = await fetch("http://localhost:8080/api/teams", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
-export async function updateTeamAPI(teamId: number, team: Team): Promise<Team> {
-  const res = await fetch(`http://localhost:8080/api/teams/${teamId}`, {
+  if (!response.ok) {
+    throw new Error("Failed to fetch teams");
+  }
+
+  return response.json();
+};
+
+// Thêm đội mới
+export const createTeamAPI = async (team: Team): Promise<void> => {
+  const response = await fetch("http://localhost:8080/api/teams", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(team),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to create team");
+  }
+};
+
+// Cập nhật đội
+export const updateTeamAPI = async (teamId: number, team: Team): Promise<void> => {
+  const response = await fetch(`http://localhost:8080/api/teams/${teamId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(team),
   });
-  if (!res.ok) {
-    throw new Error(`Failed to update team. Status: ${res.status}`);
-  }
-  return await res.json();
-}
 
-export async function deleteTeamAPI(teamId: number): Promise<void> {
-  const res = await fetch(`http://localhost:8080/api/teams/${teamId}`, {
-    method: "DELETE",
-  });
-  if (!res.ok) {
-    throw new Error(`Failed to delete team. Status: ${res.status}`);
+  if (!response.ok) {
+    throw new Error("Failed to update team");
   }
-}
+};
+
+// Xóa đội
+export const deleteTeamAPI = async (teamId: number): Promise<void> => {
+  const response = await fetch(`http://localhost:8080/api/teams/${teamId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete team");
+  }
+};
