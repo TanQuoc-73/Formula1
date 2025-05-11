@@ -29,7 +29,7 @@ export default function Sidebar() {
               <Button
                 variant={isActive ? "secondary" : "ghost"}
                 className={`w-full justify-start ${
-                  isActive ? "bg-gray-100 text-gray-900" : "text-gray-700"
+                  isActive ? "bg-gray-200 text-gray-900" : "text-gray-700"
                 }`}
               >
                 {item.icon}
