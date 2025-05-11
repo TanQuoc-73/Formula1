@@ -36,7 +36,9 @@ public class SecurityConfig {
                     "/api/login_history",
                     "/api/teams-with-drivers",
                     "/api/teams/{teamId}",
-                    "/api/teams/{id}"
+                    "/api/teams/{id}",
+                    "/api/ai/test",
+                    "/api/ai/**"
                 ).permitAll() 
                 .anyRequest().authenticated() 
             )
