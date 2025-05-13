@@ -10,10 +10,10 @@ export default function Sidebar() {
 
   const menuItems = [
     { label: "Tong quan", href: "/admin", icon: <LayoutDashboard className="h-5 w-5" /> },
-    { label: "Teams", href: "/admin/teams", icon: <Users className="h-5 w-5" /> },
-    { label: "Drivers", href: "/admin/drivers", icon: <Car className="h-5 w-5" /> },
-    { label: "Races", href: "/admin/races", icon: <Flag className="h-5 w-5" /> },
-    { label: "Race Results", href: "/admin/race-results", icon: <Trophy className="h-5 w-5" /> },
+    { label: "Cac doi", href: "/admin/teams", icon: <Users className="h-5 w-5" /> },
+    { label: "Tay dua", href: "/admin/drivers", icon: <Car className="h-5 w-5" /> },
+    { label: "Duong dua", href: "/admin/races", icon: <Flag className="h-5 w-5" /> },
+    { label: "Ket qua dua", href: "/admin/race-results", icon: <Trophy className="h-5 w-5" /> },
 
 
   ];
