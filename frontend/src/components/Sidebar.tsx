@@ -14,6 +14,10 @@ export default function Sidebar() {
     { label: "Drivers", href: "/admin/drivers", icon: <Car className="h-5 w-5" /> },
     { label: "Races", href: "/admin/races", icon: <Flag className="h-5 w-5" /> },
     { label: "Race Results", href: "/admin/race-results", icon: <Trophy className="h-5 w-5" /> },
+    { label: "Menu1", href: "/admin/1", icon: <Trophy className="h-5 w-5" /> },
+    { label: "Menu2", href: "/admin/2", icon: <Trophy className="h-5 w-5" /> },
+    { label: "Menu3", href: "/admin/3", icon: <Trophy className="h-5 w-5" /> },
+
   ];
 
   return (
