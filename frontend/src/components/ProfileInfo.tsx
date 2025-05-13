@@ -15,6 +15,10 @@ export default function ProfileInfo({ user, onEdit, onLogout }: ProfileInfoProps
           <p className="mt-1 text-lg text-gray-800">{user.userName}</p>
         </div>
         <div>
+          <label className="text-sm font-medium text-gray-600">Vai trò</label>
+          <p className="mt-1 text-lg text-gray-800">{user.role}</p>
+        </div>
+        <div>
           <label className="text-sm font-medium text-gray-600">Họ</label>
           <p className="mt-1 text-lg text-gray-800">{user.firstName}</p>
         </div>
@@ -22,10 +26,7 @@ export default function ProfileInfo({ user, onEdit, onLogout }: ProfileInfoProps
           <label className="text-sm font-medium text-gray-600">Tên</label>
           <p className="mt-1 text-lg text-gray-800">{user.lastName}</p>
         </div>
-        <div>
-          <label className="text-sm font-medium text-gray-600">Vai trò</label>
-          <p className="mt-1 text-lg text-gray-800">{user.role}</p>
-        </div>
+        
         <div>
           <label className="text-sm font-medium text-gray-600">Ngày tạo</label>
           <p className="mt-1 text-lg text-gray-800">{user.createdAt}</p>
