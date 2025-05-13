@@ -9,7 +9,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   const menuItems = [
-    { label: "Dashboard", href: "/admin", icon: <LayoutDashboard className="h-5 w-5" /> },
+    { label: "Tong quan", href: "/admin", icon: <LayoutDashboard className="h-5 w-5" /> },
     { label: "Teams", href: "/admin/teams", icon: <Users className="h-5 w-5" /> },
     { label: "Drivers", href: "/admin/drivers", icon: <Car className="h-5 w-5" /> },
     { label: "Races", href: "/admin/races", icon: <Flag className="h-5 w-5" /> },

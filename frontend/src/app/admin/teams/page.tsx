@@ -21,7 +21,7 @@ export default function AdminTeamsPage() {
     newTeam,
     updateError,
     addError,
-    predictError,
+    // predictError,
     prediction,
     setAddingTeam,
     handleEditClick,
@@ -72,7 +72,7 @@ export default function AdminTeamsPage() {
             <TeamsTable
               teams={teams}
               prediction={prediction}
-              predictError={predictError}
+              // predictError={predictError}
               onEditClick={handleEditClick}
               onDeleteClick={handleDeleteClick}
               onPredictClick={predictTeamOutcome}
