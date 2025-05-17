@@ -1,7 +1,7 @@
 package com.example.backend.service;
 
 import com.example.backend.model.News;
-import com.example.backend.repository.NewRepository;
+import com.example.backend.repository.NewsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ import java.util.Optional;
 public class NewsService {
 
     @Autowired
-    private NewRepository newsRepository;
+    private NewsRepository newsRepository;
 
     // Lấy tất cả tin tức
     public List<News> getAllNews() {

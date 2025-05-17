@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		}
+	],
+	"settings": {
+		"java.compile.nullAnalysis.mode": "automatic",
+		"git.ignoreLimitWarning": true,
+		"java.configuration.updateBuildConfiguration": "interactive"
+	}
+}

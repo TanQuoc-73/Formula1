@@ -2,20 +2,18 @@ export interface News {
   newsId: number;
   title: string;
   content: string;
-  publishedDate: string;
-  author: {
+  publishedDate: string; // Dữ liệu từ backend thường là dạng chuỗi
+  author?: {
     userId: number;
-    userName: string;
-    firstName: string;
-    lastName: string;
+    username: string;
   };
-  imageUrl: string | null;
-  race: {
+  race?: {
     raceId: number;
-    raceName: string;
-  } | null;
-  team: {
+    name: string;
+  };
+  team?: {
     teamId: number;
-    teamName: string;
-  } | null;
+    name: string;
+  };
+  
 }
