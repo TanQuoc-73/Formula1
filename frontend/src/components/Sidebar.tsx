@@ -21,6 +21,8 @@ import Logo from "../../public/images/logof1.png";
 export default function Sidebar() {
   const pathname = usePathname();
 
+
+  //Menu1
   const primaryMenu = [
     { 
       label: "Tổng quan", 
@@ -54,6 +56,8 @@ export default function Sidebar() {
     },
   ];
 
+
+  // Phan menu 2
   const secondaryMenu = [
     { 
       label: "Tin moi", 
@@ -83,7 +87,7 @@ export default function Sidebar() {
         {/* <Logo className="h-8 w-8" /> */}
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
           Formula 1 Admin
-        </h2>
+        </h2> 
       </div>
       
       <nav className="space-y-1 mb-8">
@@ -103,6 +107,8 @@ export default function Sidebar() {
         ))}
       </nav>
       
+
+      {/*Phan quan ly khac*/}
       <div className="mb-2 px-2">
         <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
           Quản lý khác
