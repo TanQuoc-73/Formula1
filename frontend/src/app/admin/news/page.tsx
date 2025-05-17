@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/table";
 
 export default function AdminNews() {
-  const { newsList, loading, error } = useNews();
+  const { newsList, loading, error,deleteNews } = useNews();
   const router = useRouter();
 
   const handleDelete = async (id: number) => {
