@@ -24,10 +24,10 @@ export const useNews = () => {
     try {
       setLoading(true);
       await deleteNewsAPI(id);
-      await fetchNews(); // Refresh news list after deletion
+      await fetchNews(); 
     } catch (err) {
       setError("Failed to delete news");
-      throw err; // Re-throw to handle in component
+      throw err; 
     } finally {
       setLoading(false);
     }
