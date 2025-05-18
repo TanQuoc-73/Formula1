@@ -1,4 +1,3 @@
-// hooks/useNews.ts
 import { useState, useEffect } from "react";
 import { News } from "@/types/news";
 import { getNewsAPI, deleteNewsAPI } from "@/services/newsService";
@@ -11,10 +10,11 @@ export const useNews = () => {
   const fetchNews = async () => {
     try {
       setLoading(true);
+      setError(null); // Reset error trước khi fetch
       const data = await getNewsAPI();
       setNewsList(data);
-    } catch (err) {
-      setError("Failed to fetch news");
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch news");
     } finally {
       setLoading(false);
     }
@@ -23,11 +23,12 @@ export const useNews = () => {
   const deleteNews = async (id: number) => {
     try {
       setLoading(true);
+      setError(null); // Reset error trước khi delete
       await deleteNewsAPI(id);
-      await fetchNews(); 
-    } catch (err) {
-      setError("Failed to delete news");
-      throw err; 
+      await fetchNews(); // Refresh danh sách sau khi xóa
+    } catch (err: any) {
+      setError(err.message || "Failed to delete news");
+      throw err; // Re-throw để component xử lý
     } finally {
       setLoading(false);
     }
@@ -42,6 +43,6 @@ export const useNews = () => {
     loading,
     error,
     fetchNews,
-    deleteNews, // Make sure to include this in return object
+    deleteNews,
   };
 };

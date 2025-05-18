@@ -2,7 +2,7 @@ export interface News {
   newsId: number;
   title: string;
   content: string;
-  publishedDate: string; // Dữ liệu từ backend thường là dạng chuỗi
+  publishedDate: string;
   author?: {
     userId: number;
     username: string;
@@ -15,5 +15,5 @@ export interface News {
     teamId: number;
     name: string;
   };
-  
+  imageUrl?: string; 
 }

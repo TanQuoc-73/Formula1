@@ -27,7 +27,6 @@ import { Label } from "@/components/ui/label";
 export default function NewsAdminPage() {
   const { newsList, loading, error, fetchNews, deleteNews } = useNews();
 
-  // State để quản lý form và dialog
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentNews, setCurrentNews] = useState<Partial<News> | null>(null);
@@ -37,9 +36,10 @@ export default function NewsAdminPage() {
     publishedDate: "",
     raceId: "",
     teamId: "",
+    imageUrl: "", // Thêm trường này
   });
+  const [formError, setFormError] = useState<string | null>(null); // Thêm state để hiển thị lỗi form
 
-  // Xử lý khi ấn nút "Edit"
   const handleEdit = (news: News) => {
     setIsEditing(true);
     setCurrentNews(news);
@@ -49,23 +49,22 @@ export default function NewsAdminPage() {
       publishedDate: news.publishedDate || "",
       raceId: news.race?.raceId?.toString() || "",
       teamId: news.team?.teamId?.toString() || "",
+      imageUrl: news.imageUrl || "",
     });
     setIsOpen(true);
   };
 
-  // Xử lý khi ấn nút "Delete"
   const handleDelete = async (id: number) => {
     if (confirm("Are you sure you want to delete this news?")) {
       try {
         await deleteNews(id);
-        alert("News deleted successfully!");
-      } catch (err) {
-        alert("Failed to delete news.");
+        setFormError(null); // Reset lỗi form
+      } catch (err: any) {
+        setFormError(err.message || "Failed to delete news");
       }
     }
   };
 
-  // Xử lý thay đổi giá trị trong form
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -73,7 +72,6 @@ export default function NewsAdminPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Xử lý submit form (thêm hoặc sửa)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newsData: Partial<News> = {
@@ -82,48 +80,46 @@ export default function NewsAdminPage() {
       publishedDate: formData.publishedDate,
       race: formData.raceId ? { raceId: Number(formData.raceId) } : undefined,
       team: formData.teamId ? { teamId: Number(formData.teamId) } : undefined,
+      imageUrl: formData.imageUrl || undefined,
     };
 
     try {
+      setFormError(null); // Reset lỗi trước khi gửi
       if (isEditing && currentNews?.newsId) {
         await updateNewsAPI(currentNews.newsId, newsData);
-        alert("News updated successfully!");
       } else {
         await createNewsAPI(newsData);
-        alert("News created successfully!");
       }
-      setFormData({ title: "", content: "", publishedDate: "", raceId: "", teamId: "" });
+      setFormData({ title: "", content: "", publishedDate: "", raceId: "", teamId: "", imageUrl: "" });
       setIsEditing(false);
       setCurrentNews(null);
       setIsOpen(false);
       fetchNews();
-    } catch (err) {
-      alert("Failed to save news.");
+    } catch (err: any) {
+      setFormError(err.message || "Failed to save news");
     }
   };
 
-  // Reset form khi đóng dialog
   const handleCancel = () => {
-    setFormData({ title: "", content: "", publishedDate: "", raceId: "", teamId: "" });
+    setFormData({ title: "", content: "", publishedDate: "", raceId: "", teamId: "", imageUrl: "" });
     setIsEditing(false);
     setCurrentNews(null);
     setIsOpen(false);
+    setFormError(null);
   };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Manage News</h1>
 
-      {/* Hiển thị lỗi hoặc loading */}
       {loading && <p className="text-yellow-600">Loading...</p>}
       {error && <p className="text-red-600">{error}</p>}
+      {formError && <p className="text-red-600">{formError}</p>}
 
-      {/* Nút mở dialog để thêm tin tức */}
       <Button onClick={() => setIsOpen(true)} className="mb-4">
         Add New News
       </Button>
 
-      {/* Dialog cho thêm/sửa tin tức */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent>
           <DialogHeader>
@@ -186,6 +182,17 @@ export default function NewsAdminPage() {
                 className="w-full"
               />
             </div>
+            <div>
+              <Label htmlFor="imageUrl">Image URL (optional)</Label>
+              <Input
+                id="imageUrl"
+                name="imageUrl"
+                type="text"
+                value={formData.imageUrl}
+                onChange={handleInputChange}
+                className="w-full"
+              />
+            </div>
             <DialogFooter>
               <Button type="submit">{isEditing ? "Update" : "Create"}</Button>
               <Button type="button" variant="outline" onClick={handleCancel}>
@@ -196,7 +203,6 @@ export default function NewsAdminPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Danh sách tin tức */}
       <div className="mt-4">
         <h2 className="text-xl font-semibold mb-2">News List</h2>
         {newsList.length === 0 ? (
@@ -210,6 +216,7 @@ export default function NewsAdminPage() {
                 <TableHead>Published Date</TableHead>
                 <TableHead>Race</TableHead>
                 <TableHead>Team</TableHead>
+                <TableHead>Image URL</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -223,6 +230,7 @@ export default function NewsAdminPage() {
                   </TableCell>
                   <TableCell>{news.race?.name || "-"}</TableCell>
                   <TableCell>{news.team?.name || "-"}</TableCell>
+                  <TableCell>{news.imageUrl || "-"}</TableCell>
                   <TableCell>
                     <Button
                       variant="outline"
