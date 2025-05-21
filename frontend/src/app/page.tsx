@@ -8,6 +8,12 @@ import Link from "next/link";
 import NewsCard from "@/components/NewsCard";
 import { Schedule } from "@/types/schedule";
 import { getSchedulesAPI } from "@/services/scheduleService";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function Home() {
   const [selectedMenu, setSelectedMenu] = useState("drivers");
@@ -15,8 +21,8 @@ export default function Home() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [schedulesLoading, setSchedulesLoading] = useState(true);
   const [schedulesError, setSchedulesError] = useState<string | null>(null);
-  const [selectedNews, setSelectedNews] = useState<any | null>(null); // Lưu tin tức được chọn cho modal
-  const [isModalOpen, setIsModalOpen] = useState(false); // Quản lý trạng thái modal
+  const [selectedNews, setSelectedNews] = useState<any | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Dữ liệu giả lập cho Drivers/Teams (có thể thay thế bằng API)
   const topDrivers = [
@@ -35,7 +41,6 @@ export default function Home() {
     const fetchSchedules = async () => {
       try {
         const data = await getSchedulesAPI();
-        // Sắp xếp theo eventDate (gần nhất trước)
         const sortedSchedules = data.sort((a, b) =>
           new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
         );
@@ -93,9 +98,9 @@ export default function Home() {
               {schedules
                 .filter((schedule) => {
                   const eventDateTime = new Date(
-                    `${schedule.eventDate}T${schedule.eventTime}+07:00`
+                    `${schedule.eventDate}T${schedule.eventTime || "00:00:00"}+07:00`
                   );
-                  return eventDateTime > new Date("2025-05-21T13:13:00+07:00");
+                  return eventDateTime > new Date("2025-05-21T13:25:00+07:00");
                 })
                 .slice(0, 3)
                 .map((schedule) => (
@@ -127,9 +132,9 @@ export default function Home() {
   const upcomingSchedules = schedules
     .filter((schedule) => {
       const eventDateTime = new Date(
-        `${schedule.eventDate}T${schedule.eventTime}+07:00`
+        `${schedule.eventDate}T${schedule.eventTime || "00:00:00"}+07:00`
       );
-      return eventDateTime > new Date("2025-05-21T13:13:00+07:00");
+      return eventDateTime > new Date("2025-05-21T13:25:00+07:00");
     })
     .slice(0, 3);
 
@@ -163,7 +168,7 @@ export default function Home() {
             <source src="/video/demo.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-          <div className="absolute inset-0 bg-black opacity-40"></div> {/* Overlay để text dễ đọc */}
+          <div className="absolute inset-0 bg-black opacity-40"></div>
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-center text-center text-white">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold mb-6">
@@ -316,38 +321,36 @@ export default function Home() {
             </div>
 
             {/* Modal cho tin tức chi tiết */}
-            {isModalOpen && selectedNews && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                    {selectedNews.title}
-                  </h2>
-                  <p className="text-sm text-gray-500 mb-4">
-                    {new Date(selectedNews.publishedDate).toLocaleDateString("vi-VN", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+              <DialogContent className="sm:max-w-md max-w-[90vw] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold text-gray-900">
+                    {selectedNews?.title}
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-500">
+                    {selectedNews?.publishedDate
+                      ? new Date(selectedNews.publishedDate).toLocaleDateString("vi-VN", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
+                      : "N/A"}
                   </p>
-                  {selectedNews.imageUrl && (
+                  {selectedNews?.imageUrl && (
                     <img
                       src={selectedNews.imageUrl}
                       alt={selectedNews.title}
-                      className="w-full h-48 object-cover rounded-md mb-4"
+                      className="w-full h-48 object-cover rounded-md"
                     />
                   )}
-                  <p className="text-gray-700 mb-4">
-                    {selectedNews.content || "Không có nội dung chi tiết."}
+                  <p className="text-gray-700">
+                    {selectedNews?.content || "Không có nội dung chi tiết."}
                   </p>
-                  <button
-                    onClick={closeModal}
-                    className="bg-red-950 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-all duration-300"
-                  >
-                    Đóng
-                  </button>
                 </div>
-              </div>
-            )}
+              </DialogContent>
+            </Dialog>
           </div>
         </section>
 
