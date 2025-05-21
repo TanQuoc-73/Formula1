@@ -17,29 +17,27 @@ export default function NewsDetail() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (id) {
-      console.log("Fetching news with ID:", id);
-      const fetchNews = async () => {
-        try {
-          const data = await getNewsByIdAPI(Number(id));
-          console.log("News data:", data);
-          setNews(data);
-        } catch (err: any) {
-          console.error("Error fetching news:", err.message);
-          setError(err.message || "Không thể tải tin tức");
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchNews();
-    } else {
-      console.log("No ID provided");
+    if (!id || isNaN(Number(id))) {
+      console.log("Invalid ID:", id);
       setLoading(false);
-      setError("Không tìm thấy ID tin tức");
+      setError("ID tin tức không hợp lệ");
+      return;
     }
+
+    const fetchNews = async () => {
+      try {
+        const data = await getNewsByIdAPI(Number(id));
+        setNews(data);
+      } catch (err: any) {
+        console.error("Error in NewsDetail:", err.message);
+        setError(err.message || "Không thể tải tin tức");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNews();
   }, [id]);
 
-  // Đảm bảo luôn render một phần tử JSX để tránh lỗi 404
   if (loading) return (
     <div className="flex flex-col bg-gray-200 min-h-screen">
       <NavBar />
@@ -51,6 +49,7 @@ export default function NewsDetail() {
       <Footer />
     </div>
   );
+
   if (error || !news) return (
     <div className="flex flex-col bg-gray-200 min-h-screen">
       <NavBar />
@@ -66,15 +65,10 @@ export default function NewsDetail() {
   return (
     <div className="flex flex-col bg-gray-200 min-h-screen">
       <NavBar />
-
-      {/* Main Content */}
       <main className="flex-grow py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="space-y-8">
-            {/* Hiển thị NewsCard */}
             <NewsCard news={news} />
-
-            {/* Nội dung chi tiết */}
             <div className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 Nội dung chi tiết
@@ -98,7 +92,6 @@ export default function NewsDetail() {
           </div>
         </div>
       </main>
-
       <Footer />
     </div>
   );
