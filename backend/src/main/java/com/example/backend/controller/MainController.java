@@ -197,10 +197,6 @@ public class MainController {
         return raceResultRepository.findAll();
     }
 
-    @GetMapping("/schedules")
-    public List<Schedule> getAllSchedules() {
-        return scheduleRepository.findAll();
-    }
 
     @GetMapping("/fastest-laps")
     public List<FastestLap> getAllFastestLaps() {
