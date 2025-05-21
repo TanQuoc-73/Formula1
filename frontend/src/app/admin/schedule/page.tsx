@@ -25,9 +25,9 @@ import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import {
   Alert,
@@ -45,7 +45,6 @@ import {
   Flag,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { News } from "@/types/news";
 
 export default function ScheduleAdminPage() {
   const { schedules, loading, error, fetchSchedules, createSchedule, updateSchedule, deleteSchedule } = useSchedules();
@@ -55,9 +54,11 @@ export default function ScheduleAdminPage() {
   const [currentSchedule, setCurrentSchedule] = useState<Partial<Schedule> | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [formData, setFormData] = useState({
-    eventName: "",
-    eventDate: "",
-    eventTime: "",
+    startTime: "",
+    endTime: "",
+    eventType: "Practice" as "Practice" | "Qualifying" | "Race" | "Sprint",
+    sessionNumber: "1",
+    notes: "",
     raceId: "",
   });
   const [formError, setFormError] = useState<string | null>(null);
@@ -68,18 +69,19 @@ export default function ScheduleAdminPage() {
     setIsRefreshing(false);
   };
 
-  // pages/admin/news.tsx
-    const handleEdit = (schedule: Schedule) => {
-  setIsEditing(true);
-  setCurrentSchedule(schedule);
-  setFormData({
-    eventName: schedule.eventName ?? "",
-    eventDate: schedule.eventDate ?? "",
-    eventTime: schedule.eventTime ?? "",
-    raceId: schedule.race?.raceId?.toString() ?? "",
-  });
-  setIsOpen(true);
-};
+  const handleEdit = (schedule: Schedule) => {
+    setIsEditing(true);
+    setCurrentSchedule(schedule);
+    setFormData({
+      startTime: schedule.startTime ?? "",
+      endTime: schedule.endTime ?? "",
+      eventType: schedule.eventType ?? "Practice",
+      sessionNumber: schedule.sessionNumber?.toString() ?? "1",
+      notes: schedule.notes ?? "",
+      raceId: schedule.race?.raceId?.toString() ?? "",
+    });
+    setIsOpen(true);
+  };
 
   const handleDelete = async (id: number) => {
     if (confirm("Bạn có chắc chắn muốn xóa lịch thi đấu này không?")) {
@@ -93,7 +95,7 @@ export default function ScheduleAdminPage() {
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -101,12 +103,26 @@ export default function ScheduleAdminPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Chuẩn hóa dữ liệu
     const scheduleData: Partial<Schedule> = {
-      eventName: formData.eventName,
-      eventDate: formData.eventDate,
-      eventTime: formData.eventTime || undefined,
+      startTime: formData.startTime ? `${formData.startTime}:00` : undefined, // Thêm giây để khớp định dạng ISO 8601
+      endTime: formData.endTime ? `${formData.endTime}:00` : undefined,
+      eventType: formData.eventType as "Practice" | "Qualifying" | "Race" | "Sprint",
+      sessionNumber: parseInt(formData.sessionNumber),
+      notes: formData.notes || undefined,
       race: formData.raceId ? { raceId: Number(formData.raceId), raceName: "", location: "" } : undefined,
     };
+
+    // Validation cơ bản
+    if (!scheduleData.startTime) {
+      setFormError("Thời gian bắt đầu không được để trống");
+      return;
+    }
+    if (scheduleData.sessionNumber && scheduleData.sessionNumber <= 0) {
+      setFormError("Số phiên phải lớn hơn 0");
+      return;
+    }
 
     try {
       setFormError(null);
@@ -115,7 +131,7 @@ export default function ScheduleAdminPage() {
       } else {
         await createSchedule(scheduleData);
       }
-      setFormData({ eventName: "", eventDate: "", eventTime: "", raceId: "" });
+      setFormData({ startTime: "", endTime: "", eventType: "Practice", sessionNumber: "1", notes: "", raceId: "" });
       setIsEditing(false);
       setCurrentSchedule(null);
       setIsOpen(false);
@@ -126,17 +142,19 @@ export default function ScheduleAdminPage() {
   };
 
   const handleCancel = () => {
-  setFormData({
-    eventName: "",
-    eventDate: "",
-    eventTime: "",
-    raceId: "",
-  });
-  setIsEditing(false);
-  setCurrentSchedule(null);
-  setIsOpen(false);
-  setFormError(null);
-};
+    setFormData({
+      startTime: "",
+      endTime: "",
+      eventType: "Practice",
+      sessionNumber: "1",
+      notes: "",
+      raceId: "",
+    });
+    setIsEditing(false);
+    setCurrentSchedule(null);
+    setIsOpen(false);
+    setFormError(null);
+  };
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -225,9 +243,10 @@ export default function ScheduleAdminPage() {
                   <TableHeader>
                     <TableRow className="bg-gray-100">
                       <TableHead className="font-bold">ID</TableHead>
-                      <TableHead className="font-bold">Sự kiện</TableHead>
-                      <TableHead className="font-bold">Ngày</TableHead>
-                      <TableHead className="font-bold">Giờ</TableHead>
+                      <TableHead className="font-bold">Loại sự kiện</TableHead>
+                      <TableHead className="font-bold">Thời gian bắt đầu</TableHead>
+                      <TableHead className="font-bold">Thời gian kết thúc</TableHead>
+                      <TableHead className="font-bold">Số phiên</TableHead>
                       <TableHead className="font-bold">Cuộc đua</TableHead>
                       <TableHead className="font-bold text-right">Thao tác</TableHead>
                     </TableRow>
@@ -236,19 +255,29 @@ export default function ScheduleAdminPage() {
                     {schedules.map((schedule) => (
                       <TableRow key={schedule.scheduleId} className="hover:bg-gray-50">
                         <TableCell className="font-medium">{schedule.scheduleId}</TableCell>
-                        <TableCell className="max-w-xs truncate">{schedule.eventName}</TableCell>
+                        <TableCell>{schedule.eventType}</TableCell>
                         <TableCell>
                           <div className="flex items-center">
                             <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                            {new Date(schedule.eventDate).toLocaleDateString("vi-VN")}
+                            {new Date(schedule.startTime).toLocaleString("vi-VN", {
+                              dateStyle: "short",
+                              timeStyle: "short",
+                            })}
                           </div>
                         </TableCell>
                         <TableCell>
-                          {schedule.eventTime ? schedule.eventTime.slice(0, 5) : "--:--"}
+                          {schedule.endTime ? (
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                              {new Date(schedule.endTime).toLocaleString("vi-VN", {
+                                dateStyle: "short",
+                                timeStyle: "short",
+                              })}
+                            </div>
+                          ) : "--:--"}
                         </TableCell>
-                        <TableCell>
-                          {schedule.race?.raceName || "-"}
-                        </TableCell>
+                        <TableCell>{schedule.sessionNumber}</TableCell>
+                        <TableCell>{schedule.race?.raceName || "-"}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button
@@ -289,26 +318,13 @@ export default function ScheduleAdminPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <Label htmlFor="eventName" className="text-sm font-medium">Tên sự kiện</Label>
-                <Input
-                  id="eventName"
-                  name="eventName"
-                  value={formData.eventName}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full mt-1"
-                  placeholder="Nhập tên sự kiện"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="eventDate" className="text-sm font-medium">Ngày diễn ra</Label>
+                <Label htmlFor="startTime" className="text-sm font-medium">Thời gian bắt đầu</Label>
                 <div className="relative">
                   <Input
-                    id="eventDate"
-                    name="eventDate"
-                    type="date"
-                    value={formData.eventDate}
+                    id="startTime"
+                    name="startTime"
+                    type="datetime-local"
+                    value={formData.startTime}
                     onChange={handleInputChange}
                     required
                     className="w-full mt-1"
@@ -316,20 +332,66 @@ export default function ScheduleAdminPage() {
                   <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none h-4 w-4" />
                 </div>
               </div>
-              
+
               <div>
-                <Label htmlFor="eventTime" className="text-sm font-medium">Giờ diễn ra (tùy chọn)</Label>
-                <Input
-                  id="eventTime"
-                  name="eventTime"
-                  type="time"
-                  value={formData.eventTime}
+                <Label htmlFor="endTime" className="text-sm font-medium">Thời gian kết thúc (tùy chọn)</Label>
+                <div className="relative">
+                  <Input
+                    id="endTime"
+                    name="endTime"
+                    type="datetime-local"
+                    value={formData.endTime}
+                    onChange={handleInputChange}
+                    className="w-full mt-1"
+                  />
+                  <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none h-4 w-4" />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="eventType" className="text-sm font-medium">Loại sự kiện</Label>
+                <select
+                  id="eventType"
+                  name="eventType"
+                  value={formData.eventType}
                   onChange={handleInputChange}
+                  required
+                  className="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                >
+                  <option value="Practice">Practice</option>
+                  <option value="Qualifying">Qualifying</option>
+                  <option value="Race">Race</option>
+                  <option value="Sprint">Sprint</option>
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="sessionNumber" className="text-sm font-medium">Số phiên</Label>
+                <Input
+                  id="sessionNumber"
+                  name="sessionNumber"
+                  type="number"
+                  value={formData.sessionNumber}
+                  onChange={handleInputChange}
+                  required
+                  min="1"
                   className="w-full mt-1"
-                  placeholder="HH:MM"
+                  placeholder="Ví dụ: 1"
                 />
               </div>
-              
+
+              <div>
+                <Label htmlFor="notes" className="text-sm font-medium">Ghi chú (tùy chọn)</Label>
+                <Input
+                  id="notes"
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleInputChange}
+                  className="w-full mt-1"
+                  placeholder="Nhập ghi chú"
+                />
+              </div>
+
               <div>
                 <Label htmlFor="raceId" className="text-sm font-medium">ID Cuộc đua</Label>
                 <div className="relative">
