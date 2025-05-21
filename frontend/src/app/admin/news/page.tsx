@@ -23,6 +23,32 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
+import {
+  PlusCircle,
+  Edit,
+  Trash2,
+  AlertCircle,
+  RefreshCw,
+  Loader2,
+  Calendar,
+  Image,
+  Flag,
+  Users,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function NewsAdminPage() {
   const { newsList, loading, error, fetchNews, deleteNews } = useNews();
@@ -30,15 +56,22 @@ export default function NewsAdminPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentNews, setCurrentNews] = useState<Partial<News> | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     content: "",
     publishedDate: "",
     raceId: "",
     teamId: "",
-    imageUrl: "", // Thêm trường này
+    imageUrl: "", 
   });
-  const [formError, setFormError] = useState<string | null>(null); // Thêm state để hiển thị lỗi form
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchNews();
+    setIsRefreshing(false);
+  };
 
   const handleEdit = (news: News) => {
     setIsEditing(true);
@@ -55,12 +88,12 @@ export default function NewsAdminPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm("Are you sure you want to delete this news?")) {
+    if (confirm("Bạn có chắc chắn muốn xóa tin tức này không?")) {
       try {
         await deleteNews(id);
-        setFormError(null); // Reset lỗi form
+        setFormError(null);
       } catch (err: any) {
-        setFormError(err.message || "Failed to delete news");
+        setFormError(err.message || "Không thể xóa tin tức");
       }
     }
   };
@@ -84,7 +117,7 @@ export default function NewsAdminPage() {
     };
 
     try {
-      setFormError(null); // Reset lỗi trước khi gửi
+      setFormError(null);
       if (isEditing && currentNews?.newsId) {
         await updateNewsAPI(currentNews.newsId, newsData);
       } else {
@@ -96,7 +129,7 @@ export default function NewsAdminPage() {
       setIsOpen(false);
       fetchNews();
     } catch (err: any) {
-      setFormError(err.message || "Failed to save news");
+      setFormError(err.message || "Không thể lưu tin tức");
     }
   };
 
@@ -109,149 +142,312 @@ export default function NewsAdminPage() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Manage News</h1>
+    <div className="container mx-auto py-8 px-4">
+      <Card className="border-0 shadow-md">
+        <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-t-lg">
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle className="text-3xl font-bold">Quản lý tin tức</CardTitle>
+              <CardDescription className="text-blue-100 mt-1">
+                Tạo, chỉnh sửa và xóa tin tức
+              </CardDescription>
+            </div>
+            <div className="flex space-x-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      onClick={handleRefresh} 
+                      variant="outline" 
+                      size="icon" 
+                      className="bg-blue-700 hover:bg-blue-600 text-white border-blue-500"
+                    >
+                      {isRefreshing ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-5 w-5" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Làm mới danh sách</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <Button 
+                onClick={() => setIsOpen(true)} 
+                className="bg-green-600 hover:bg-green-500 text-white"
+              >
+                <PlusCircle className="mr-2 h-4 w-4" /> Thêm tin tức mới
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          {(loading || error || formError) && (
+            <div className="mb-6">
+              {loading && (
+                <Alert className="bg-yellow-50 border-yellow-200 text-yellow-800 mb-4">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <AlertTitle>Đang tải...</AlertTitle>
+                  <AlertDescription>
+                    Vui lòng đợi trong khi chúng tôi tải dữ liệu tin tức.
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {(error || formError) && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  <AlertTitle>Lỗi</AlertTitle>
+                  <AlertDescription>
+                    {error || formError}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          )}
 
-      {loading && <p className="text-yellow-600">Loading...</p>}
-      {error && <p className="text-red-600">{error}</p>}
-      {formError && <p className="text-red-600">{formError}</p>}
-
-      <Button onClick={() => setIsOpen(true)} className="mb-4">
-        Add New News
-      </Button>
+          <div className="bg-white rounded-lg overflow-hidden">
+            <h2 className="text-xl font-semibold mb-4 px-2">Danh sách tin tức</h2>
+            {newsList.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                <p className="text-gray-500">Không có tin tức nào.</p>
+                <Button 
+                  onClick={() => setIsOpen(true)} 
+                  variant="outline" 
+                  className="mt-4"
+                >
+                  <PlusCircle className="mr-2 h-4 w-4" /> Thêm tin tức đầu tiên
+                </Button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-100">
+                      <TableHead className="font-bold">ID</TableHead>
+                      <TableHead className="font-bold">Tiêu đề</TableHead>
+                      <TableHead className="font-bold">Ngày đăng</TableHead>
+                      <TableHead className="font-bold">Cuộc đua</TableHead>
+                      <TableHead className="font-bold">Đội</TableHead>
+                      <TableHead className="font-bold">Hình ảnh</TableHead>
+                      <TableHead className="font-bold text-right">Thao tác</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {newsList.map((news) => (
+                      <TableRow key={news.newsId} className="hover:bg-gray-50">
+                        <TableCell className="font-medium">{news.newsId}</TableCell>
+                        <TableCell className="max-w-xs truncate">{news.title}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                            {new Date(news.publishedDate).toLocaleString('vi-VN')}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {news.race?.name ? (
+                            <Badge variant="outline" className="flex items-center gap-1 bg-blue-50">
+                              <Flag className="h-3 w-3 text-blue-500" />
+                              {news.race.name}
+                            </Badge>
+                          ) : "-"}
+                        </TableCell>
+                        <TableCell>
+                          {news.team?.name ? (
+                            <Badge variant="outline" className="flex items-center gap-1 bg-purple-50">
+                              <Users className="h-3 w-3 text-purple-500" />
+                              {news.team.name}
+                            </Badge>
+                          ) : "-"}
+                        </TableCell>
+                        <TableCell>
+                          {news.imageUrl ? (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <div className="flex items-center">
+                                    <Image className="h-4 w-4 mr-1 text-gray-500" />
+                                    <span className="text-blue-600 hover:text-blue-800 underline">
+                                      Xem hình
+                                    </span>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom">
+                                  <div className="p-1">
+                                    <img 
+                                      src={news.imageUrl} 
+                                      alt={news.title} 
+                                      className="max-w-xs max-h-48 rounded" 
+                                    />
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : "-"}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(news)}
+                              className="h-8 border-blue-200 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            >
+                              <Edit className="h-4 w-4 mr-1" /> Sửa
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(news.newsId)}
+                              className="h-8 border-red-200 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" /> Xóa
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{isEditing ? "Edit News" : "Add New News"}</DialogTitle>
+            <DialogTitle className="text-xl font-bold">
+              {isEditing ? "Chỉnh sửa tin tức" : "Thêm tin tức mới"}
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                required
-                className="w-full"
-              />
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <Label htmlFor="title" className="text-sm font-medium">Tiêu đề</Label>
+                <Input
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full mt-1"
+                  placeholder="Nhập tiêu đề tin tức"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="content" className="text-sm font-medium">Nội dung</Label>
+                <Textarea
+                  id="content"
+                  name="content"
+                  value={formData.content}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full mt-1 min-h-32"
+                  placeholder="Nhập nội dung chi tiết tin tức"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="publishedDate" className="text-sm font-medium">Ngày đăng</Label>
+                <div className="relative">
+                  <Input
+                    id="publishedDate"
+                    name="publishedDate"
+                    type="datetime-local"
+                    value={formData.publishedDate}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full mt-1"
+                  />
+                  <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none h-4 w-4" />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="raceId" className="text-sm font-medium">ID Cuộc đua (tùy chọn)</Label>
+                  <div className="relative">
+                    <Input
+                      id="raceId"
+                      name="raceId"
+                      type="number"
+                      value={formData.raceId}
+                      onChange={handleInputChange}
+                      className="w-full mt-1"
+                      placeholder="Ví dụ: 1"
+                    />
+                    <Flag className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none h-4 w-4" />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="teamId" className="text-sm font-medium">ID Đội (tùy chọn)</Label>
+                  <div className="relative">
+                    <Input
+                      id="teamId"
+                      name="teamId"
+                      type="number"
+                      value={formData.teamId}
+                      onChange={handleInputChange}
+                      className="w-full mt-1"
+                      placeholder="Ví dụ: 1"
+                    />
+                    <Users className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none h-4 w-4" />
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="imageUrl" className="text-sm font-medium">URL Hình ảnh (tùy chọn)</Label>
+                <div className="relative">
+                  <Input
+                    id="imageUrl"
+                    name="imageUrl"
+                    type="text"
+                    value={formData.imageUrl}
+                    onChange={handleInputChange}
+                    className="w-full mt-1"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                  <Image className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none h-4 w-4" />
+                </div>
+                
+                {formData.imageUrl && (
+                  <div className="mt-2 p-2 border rounded">
+                    <p className="text-xs text-gray-500 mb-1">Xem trước:</p>
+                    <img 
+                      src={formData.imageUrl} 
+                      alt="Preview" 
+                      className="max-h-32 rounded" 
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "https://via.placeholder.com/150?text=Invalid+Image+URL";
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-            <div>
-              <Label htmlFor="content">Content</Label>
-              <Textarea
-                id="content"
-                name="content"
-                value={formData.content}
-                onChange={handleInputChange}
-                required
-                className="w-full"
-              />
-            </div>
-            <div>
-              <Label htmlFor="publishedDate">Published Date</Label>
-              <Input
-                id="publishedDate"
-                name="publishedDate"
-                type="datetime-local"
-                value={formData.publishedDate}
-                onChange={handleInputChange}
-                required
-                className="w-full"
-              />
-            </div>
-            <div>
-              <Label htmlFor="raceId">Race ID (optional)</Label>
-              <Input
-                id="raceId"
-                name="raceId"
-                type="number"
-                value={formData.raceId}
-                onChange={handleInputChange}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <Label htmlFor="teamId">Team ID (optional)</Label>
-              <Input
-                id="teamId"
-                name="teamId"
-                type="number"
-                value={formData.teamId}
-                onChange={handleInputChange}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <Label htmlFor="imageUrl">Image URL (optional)</Label>
-              <Input
-                id="imageUrl"
-                name="imageUrl"
-                type="text"
-                value={formData.imageUrl}
-                onChange={handleInputChange}
-                className="w-full"
-              />
-            </div>
-            <DialogFooter>
-              <Button type="submit">{isEditing ? "Update" : "Create"}</Button>
+            <DialogFooter className="flex justify-end space-x-2 pt-4 border-t">
               <Button type="button" variant="outline" onClick={handleCancel}>
-                Cancel
+                Hủy bỏ
+              </Button>
+              <Button 
+                type="submit"
+                className={isEditing ? "bg-blue-600 hover:bg-blue-700" : "bg-green-600 hover:bg-green-700"}
+              >
+                {isEditing ? "Cập nhật" : "Tạo mới"}
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
-
-      <div className="mt-4">
-        <h2 className="text-xl font-semibold mb-2">News List</h2>
-        {newsList.length === 0 ? (
-          <p className="text-gray-500">No news available.</p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Published Date</TableHead>
-                <TableHead>Race</TableHead>
-                <TableHead>Team</TableHead>
-                <TableHead>Image URL</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {newsList.map((news) => (
-                <TableRow key={news.newsId}>
-                  <TableCell>{news.newsId}</TableCell>
-                  <TableCell>{news.title}</TableCell>
-                  <TableCell>
-                    {new Date(news.publishedDate).toLocaleString()}
-                  </TableCell>
-                  <TableCell>{news.race?.name || "-"}</TableCell>
-                  <TableCell>{news.team?.name || "-"}</TableCell>
-                  <TableCell>{news.imageUrl || "-"}</TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleEdit(news)}
-                      className="mr-2"
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => handleDelete(news.newsId)}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </div>
     </div>
   );
 }

@@ -1,15 +1,16 @@
 "use client"
 
 import { useState } from "react";
+import { useNews } from "@/hooks/useNews"; // Giả sử hook nằm trong @/hooks/useNews
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
+import NewsCard from "@/components/NewsCard"; // Giả sử NewsCard nằm trong @/components/NewsCard
 
 export default function Home() {
-  // State to track the selected menu item
   const [selectedMenu, setSelectedMenu] = useState("drivers");
+  const { newsList, loading, error } = useNews(); // Sử dụng hook useNews
 
-  // Content for each menu item
   const menuContents = {
     drivers: (
       <div className="p-6">
@@ -61,49 +62,35 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Featured Section: Drivers, Teams, Races */}
-        <section className="w-full py-16 bg-gray-100">
+        {/* News Section */}
+        <section className="bg-gray-200 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-              Formula 1 Highlights
+              Tin Tức Mới Nhất
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-              <div className="bg-white p-6 rounded-lg shadow-lg">
-                <h3 className="text-xl font-bold text-red-950 mb-4">Drivers</h3>
-                <p className="text-gray-600">
-                  Meet the world's best drivers, the heart and soul of every race.
-                </p>
-                <Link
-                  href="/drivers"
-                  className="text-red-950 font-semibold hover:underline mt-4 block"
-                >
-                  Learn More
+            {loading && (
+              <p className="text-center text-gray-600">Đang tải tin tức...</p>
+            )}
+            {error && (
+              <p className="text-center text-red-600">Lỗi: {error}</p>
+            )}
+            {!loading && !error && newsList.length === 0 && (
+              <p className="text-center text-gray-600">Không có tin tức nào.</p>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {newsList.map((news) => (
+                <Link key={news.newsId} href={`/news/${news.newsId}`}>
+                  <NewsCard news={news} />
                 </Link>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-lg">
-                <h3 className="text-xl font-bold text-red-950 mb-4">Teams</h3>
-                <p className="text-gray-600">
-                  Get to know the teams that engineer, race, and push the limits of performance.
-                </p>
-                <Link
-                  href="/teams"
-                  className="text-red-950 font-semibold hover:underline mt-4 block"
-                >
-                  Learn More
-                </Link>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-lg">
-                <h3 className="text-xl font-bold text-red-950 mb-4">Races</h3>
-                <p className="text-gray-600">
-                  Discover upcoming races and results from the thrilling circuits around the world.
-                </p>
-                <Link
-                  href="/races"
-                  className="text-red-950 font-semibold hover:underline mt-4 block"
-                >
-                  Learn More
-                </Link>
-              </div>
+              ))}
+            </div>
+            <div className="text-center mt-8">
+              <Link
+                href="/news"
+                className="inline-block bg-red-950 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-red-700 transition-all duration-300"
+              >
+                Xem Tất Cả Tin Tức
+              </Link>
             </div>
           </div>
         </section>
@@ -139,26 +126,12 @@ export default function Home() {
         </section>
 
         {/* Upcoming Races Section */}
-        {/*Thông tin */}
         <section className="bg-gray-200 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-              Upcoming Races
+              Các Cuộc Đua Sắp Tới
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-xl font-semibold text-red-950">Australian Grand Prix</h3>
-                <p className="text-gray-600">Melbourne, Australia - 18 Mar 2023</p>
-              </div>
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-xl font-semibold text-red-950">Bahrain Grand Prix</h3>
-                <p className="text-gray-600">Sakhir, Bahrain - 25 Mar 2023</p>
-              </div>
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-xl font-semibold text-red-950">Spanish Grand Prix</h3>
-                <p className="text-gray-600">Barcelona, Spain - 10 Apr 2023</p>
-              </div>
-            </div>
+            {/* Nội dung Upcoming Races sẽ được thêm sau */}
           </div>
         </section>
 
