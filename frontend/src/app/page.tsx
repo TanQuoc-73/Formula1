@@ -127,7 +127,7 @@ export default function Home() {
         </section>
 
         {/* Two-Column Section: Left (Highlight), Right (Mini News) */}
-        <section className="bg-gray-200 py-16">
+        <section className="bg-gray-300 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column: Highlight Content */}
@@ -242,7 +242,7 @@ export default function Home() {
         </section>
 
         {/* Upcoming Races Section */}
-        <section className="bg-gray-200 py-16">
+        <section className="bg-gray-300 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
               Các Cuộc Đua Sắp Tới
