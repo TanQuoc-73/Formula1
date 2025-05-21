@@ -33,6 +33,7 @@ public class SecurityConfig {
                     "/api/races", 
                     "/api/race-results", 
                     "/api/schedules", 
+                    "/api/schedules/**", 
                     "/api/fastest-laps",
                     "/api/login_history",
                     "/api/teams-with-drivers",
