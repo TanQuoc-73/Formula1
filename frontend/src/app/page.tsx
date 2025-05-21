@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNews } from "@/hooks/useNews";
+import { useSchedules } from "@/hooks/useSchedules";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import NewsCard from "@/components/NewsCard";
-import { Schedule } from "@/types/schedule";
-import { getSchedulesAPI } from "@/services/scheduleService";
 import {
   Dialog,
   DialogContent,
@@ -18,9 +17,7 @@ import {
 export default function Home() {
   const [selectedMenu, setSelectedMenu] = useState("drivers");
   const { newsList, loading: newsLoading, error: newsError } = useNews();
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [schedulesLoading, setSchedulesLoading] = useState(true);
-  const [schedulesError, setSchedulesError] = useState<string | null>(null);
+  const { schedules, loading: schedulesLoading, error: schedulesError } = useSchedules();
   const [selectedNews, setSelectedNews] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -35,24 +32,6 @@ export default function Home() {
     { name: "Ferrari", points: 180 },
     { name: "Mercedes", points: 165 },
   ];
-
-  // Fetch schedules
-  useEffect(() => {
-    const fetchSchedules = async () => {
-      try {
-        const data = await getSchedulesAPI();
-        const sortedSchedules = data.sort((a, b) =>
-          new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
-        );
-        setSchedules(sortedSchedules);
-      } catch (err: any) {
-        setSchedulesError(err.message || "Không thể tải lịch thi đấu");
-      } finally {
-        setSchedulesLoading(false);
-      }
-    };
-    fetchSchedules();
-  }, []);
 
   const menuContents = {
     drivers: (
@@ -100,7 +79,7 @@ export default function Home() {
                   const eventDateTime = new Date(
                     `${schedule.eventDate}T${schedule.eventTime || "00:00:00"}+07:00`
                   );
-                  return eventDateTime > new Date("2025-05-21T13:25:00+07:00");
+                  return eventDateTime > new Date("2025-05-21T17:31:00+07:00");
                 })
                 .slice(0, 3)
                 .map((schedule) => (
@@ -134,7 +113,7 @@ export default function Home() {
       const eventDateTime = new Date(
         `${schedule.eventDate}T${schedule.eventTime || "00:00:00"}+07:00`
       );
-      return eventDateTime > new Date("2025-05-21T13:25:00+07:00");
+      return eventDateTime > new Date("2025-05-21T17:31:00+07:00");
     })
     .slice(0, 3);
 

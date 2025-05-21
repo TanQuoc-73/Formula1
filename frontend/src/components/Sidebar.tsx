@@ -65,8 +65,8 @@ export default function Sidebar() {
       icon: <FileText className="h-5 w-5" /> 
     },
     { 
-      label: "Quy định", 
-      href: "/admin/regulations", 
+      label: "Lich dua", 
+      href: "/admin/schedule", 
       icon: <FileText className="h-5 w-5" /> 
     },
     { 
