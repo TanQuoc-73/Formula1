@@ -8,8 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Schedules")
@@ -23,23 +22,31 @@ public class Schedule {
     @JoinColumn(name = "RaceID")
     private Race race;
 
-    @Column(name = "eventname", nullable = false, length = 100)
-    private String eventName;
+    @Column(name = "StartTime", nullable = false)
+    private LocalDateTime startTime;
 
-    @Column(name = "eventdate")
-    private LocalDate eventDate;
+    @Column(name = "EndTime")
+    private LocalDateTime endTime;
 
-    @Column(name = "eventtime")
-    private LocalTime eventTime;
+    @Column(name = "EventType", nullable = false)
+    private String eventType; // Sử dụng String để ánh xạ ENUM
+
+    @Column(name = "SessionNumber")
+    private Integer sessionNumber;
+
+    @Column(name = "Notes")
+    private String notes;
 
     public Schedule() {
     }
 
-    public Schedule(Race race, String eventName, LocalDate eventDate, LocalTime eventTime) {
+    public Schedule(Race race, LocalDateTime startTime, LocalDateTime endTime, String eventType, Integer sessionNumber, String notes) {
         this.race = race;
-        this.eventName = eventName;
-        this.eventDate = eventDate;
-        this.eventTime = eventTime;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.eventType = eventType;
+        this.sessionNumber = sessionNumber;
+        this.notes = notes;
     }
 
     public Integer getScheduleId() {
@@ -58,27 +65,43 @@ public class Schedule {
         this.race = race;
     }
 
-    public String getEventName() {
-        return eventName;
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
 
-    public void setEventName(String eventName) {
-        this.eventName = eventName;
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
     }
 
-    public LocalDate getEventDate() {
-        return eventDate;
+    public LocalDateTime getEndTime() {
+        return endTime;
     }
 
-    public void setEventDate(LocalDate eventDate) {
-        this.eventDate = eventDate;
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
-    public LocalTime getEventTime() {
-        return eventTime;
+    public String getEventType() {
+        return eventType;
     }
 
-    public void setEventTime(LocalTime eventTime) {
-        this.eventTime = eventTime;
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
+    }
+
+    public Integer getSessionNumber() {
+        return sessionNumber;
+    }
+
+    public void setSessionNumber(Integer sessionNumber) {
+        this.sessionNumber = sessionNumber;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }
