@@ -63,7 +63,7 @@ export default function NewsAdminPage() {
     publishedDate: "",
     raceId: "",
     teamId: "",
-    imageUrl: "", 
+    imageUrl: "",
   });
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -319,7 +319,7 @@ export default function NewsAdminPage() {
       </Card>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-2xl max-w-[90vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">
               {isEditing ? "Chỉnh sửa tin tức" : "Thêm tin tức mới"}
@@ -419,12 +419,12 @@ export default function NewsAdminPage() {
                 </div>
                 
                 {formData.imageUrl && (
-                  <div className="mt-2 p-2 border rounded">
+                  <div className="mt-2 p-2 border rounded max-h-48 overflow-hidden">
                     <p className="text-xs text-gray-500 mb-1">Xem trước:</p>
                     <img 
                       src={formData.imageUrl} 
                       alt="Preview" 
-                      className="max-h-32 rounded" 
+                      className="max-w-full max-h-48 rounded object-cover"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.src = "https://via.placeholder.com/150?text=Invalid+Image+URL";
