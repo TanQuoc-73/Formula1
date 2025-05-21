@@ -85,7 +85,7 @@ export default function NewsDetail() {
                   href="/news"
                   className="inline-block text-red-950 font-semibold hover:text-red-700"
                 >
-                  ← Quay lại danh sách tin tức
+                  ← Quay lại danh sách tin tức  
                 </Link>
               </div>
             </div>
