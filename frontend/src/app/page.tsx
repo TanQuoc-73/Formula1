@@ -92,24 +92,37 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="flex-grow mt-5">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-r from-red-950 to-red-800 text-white py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Formula 1 2025 – Đón xem các cuộc đua đỉnh cao!
-            </h1>
-            <p className="text-lg md:text-xl text-gray-200 max-w-3xl mx-auto mb-4">
-              Trải nghiệm cảm giác hồi hộp của môn thể thao tốc độ hấp dẫn nhất thế giới.
-            </p>
-            <p className="text-md text-gray-300 mb-8">
-              Cuộc đua tiếp theo: Monaco Grand Prix – 25/05/2025
-            </p>
-            <Link
-              href="/schedule"
-              className="inline-block bg-white text-red-950 px-8 py-3 rounded-md text-lg font-semibold hover:bg-red-200 hover:text-white transition-all duration-300"
-            >
-              Xem lịch đua
-            </Link>
+        {/* Hero Section with Video Background */}
+        <section className="relative h-[60vh] w-full overflow-hidden">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute top-0 left-0 w-full h-full object-cover"
+          >
+            <source src="/video/demo.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          <div className="absolute inset-0 bg-black opacity-40"></div> {/* Overlay để text dễ đọc */}
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-center text-center text-white">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-6">
+                Formula 1 2025 – Đón xem các cuộc đua đỉnh cao!
+              </h1>
+              <p className="text-lg md:text-xl text-gray-200 max-w-3xl mx-auto mb-4">
+                Trải nghiệm cảm giác hồi hộp của môn thể thao tốc độ hấp dẫn nhất thế giới.
+              </p>
+              <p className="text-md text-gray-300 mb-8">
+                Cuộc đua tiếp theo: Monaco Grand Prix – 25/05/2025
+              </p>
+              <Link
+                href="/schedule"
+                className="inline-block bg-white text-red-950 px-8 py-3 rounded-md text-lg font-semibold hover:bg-red-200 hover:text-white transition-all duration-300"
+              >
+                Xem lịch đua
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -199,7 +212,38 @@ export default function Home() {
           </div>
         </section>
 
-        
+        {/* News Section */}
+        <section className="bg-gray-200 py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+              Tin Tức Mới Nhất
+            </h2>
+            {loading && (
+              <p className="text-center text-gray-600">Đang tải tin tức...</p>
+            )}
+            {error && (
+              <p className="text-center text-red-600">Lỗi: {error}</p>
+            )}
+            {!loading && !error && sortedNewsList.length === 0 && (
+              <p className="text-center text-gray-600">Không có tin tức nào.</p>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sortedNewsList.slice(0, 6).map((news) => (
+                <Link key={news.newsId} href={`/news/${news.newsId}`}>
+                  <NewsCard news={news} />
+                </Link>
+              ))}
+            </div>
+            <div className="text-center mt-8">
+              <Link
+                href="/news"
+                className="inline-block bg-red-950 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-red-700 transition-all duration-300"
+              >
+                Xem Tất Cả Tin Tức
+              </Link>
+            </div>
+          </div>
+        </section>
 
         {/* Menu Section: Drivers, Teams, Races */}
         <section className="bg-red-800 w-screen py-6 flex justify-center items-center">
