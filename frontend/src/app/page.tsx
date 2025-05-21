@@ -15,6 +15,8 @@ export default function Home() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [schedulesLoading, setSchedulesLoading] = useState(true);
   const [schedulesError, setSchedulesError] = useState<string | null>(null);
+  const [selectedNews, setSelectedNews] = useState<any | null>(null); // Lưu tin tức được chọn cho modal
+  const [isModalOpen, setIsModalOpen] = useState(false); // Quản lý trạng thái modal
 
   // Dữ liệu giả lập cho Drivers/Teams (có thể thay thế bằng API)
   const topDrivers = [
@@ -93,7 +95,7 @@ export default function Home() {
                   const eventDateTime = new Date(
                     `${schedule.eventDate}T${schedule.eventTime}+07:00`
                   );
-                  return eventDateTime > new Date("2025-05-21T13:05:00+07:00");
+                  return eventDateTime > new Date("2025-05-21T13:13:00+07:00");
                 })
                 .slice(0, 3)
                 .map((schedule) => (
@@ -127,9 +129,21 @@ export default function Home() {
       const eventDateTime = new Date(
         `${schedule.eventDate}T${schedule.eventTime}+07:00`
       );
-      return eventDateTime > new Date("2025-05-21T13:05:00+07:00");
+      return eventDateTime > new Date("2025-05-21T13:13:00+07:00");
     })
     .slice(0, 3);
+
+  // Hàm mở modal
+  const openModal = (news: any) => {
+    setSelectedNews(news);
+    setIsModalOpen(true);
+  };
+
+  // Hàm đóng modal
+  const closeModal = () => {
+    setSelectedNews(null);
+    setIsModalOpen(false);
+  };
 
   return (
     <div className="flex flex-col bg-gray-200 min-h-screen">
@@ -224,29 +238,31 @@ export default function Home() {
                   {!newsLoading && !newsError && miniNewsList.length > 0 && (
                     <div className="space-y-4">
                       {miniNewsList.map((news) => (
-                        <Link key={news.newsId} href={`/news/${news.newsId}`}>
-                          <div className="flex items-start space-x-3 border-b border-gray-200 pb-3 last:border-b-0 hover:bg-gray-50 transition-colors duration-200">
-                            {news.imageUrl && (
-                              <img
-                                src={news.imageUrl}
-                                alt={news.title}
-                                className="w-12 h-12 object-cover rounded-md"
-                              />
-                            )}
-                            <div className="flex-1">
-                              <h3 className="text-sm font-semibold text-gray-900 line-clamp-2">
-                                {news.title}
-                              </h3>
-                              <p className="text-xs text-gray-500 mt-1">
-                                {new Date(news.publishedDate).toLocaleDateString("vi-VN", {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                  year: "numeric",
-                                })}
-                              </p>
-                            </div>
+                        <div
+                          key={news.newsId}
+                          onClick={() => openModal(news)}
+                          className="flex items-start space-x-3 border-b border-gray-200 pb-3 last:border-b-0 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+                        >
+                          {news.imageUrl && (
+                            <img
+                              src={news.imageUrl}
+                              alt={news.title}
+                              className="w-12 h-12 object-cover rounded-md"
+                            />
+                          )}
+                          <div className="flex-1">
+                            <h3 className="text-sm font-semibold text-gray-900 line-clamp-2">
+                              {news.title}
+                            </h3>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {new Date(news.publishedDate).toLocaleDateString("vi-VN", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              })}
+                            </p>
                           </div>
-                        </Link>
+                        </div>
                       ))}
                       <div className="text-center mt-4">
                         <Link
@@ -281,9 +297,13 @@ export default function Home() {
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {sortedNewsList.slice(0, 6).map((news) => (
-                <Link key={news.newsId} href={`/news/${news.newsId}`}>
+                <div
+                  key={news.newsId}
+                  onClick={() => openModal(news)}
+                  className="cursor-pointer"
+                >
                   <NewsCard news={news} />
-                </Link>
+                </div>
               ))}
             </div>
             <div className="text-center mt-8">
@@ -294,6 +314,40 @@ export default function Home() {
                 Xem Tất Cả Tin Tức
               </Link>
             </div>
+
+            {/* Modal cho tin tức chi tiết */}
+            {isModalOpen && selectedNews && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    {selectedNews.title}
+                  </h2>
+                  <p className="text-sm text-gray-500 mb-4">
+                    {new Date(selectedNews.publishedDate).toLocaleDateString("vi-VN", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })}
+                  </p>
+                  {selectedNews.imageUrl && (
+                    <img
+                      src={selectedNews.imageUrl}
+                      alt={selectedNews.title}
+                      className="w-full h-48 object-cover rounded-md mb-4"
+                    />
+                  )}
+                  <p className="text-gray-700 mb-4">
+                    {selectedNews.content || "Không có nội dung chi tiết."}
+                  </p>
+                  <button
+                    onClick={closeModal}
+                    className="bg-red-950 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-all duration-300"
+                  >
+                    Đóng
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -353,7 +407,7 @@ export default function Home() {
                     {schedule.race.location}
                   </p>
                   <p className="text-gray-500 text-sm mt-1">
-                    {schedule.eventTime.slice(0, 5)}
+                    {schedule.eventTime ? schedule.eventTime.slice(0, 5) : "--:--"}
                   </p>
                 </div>
               ))}
