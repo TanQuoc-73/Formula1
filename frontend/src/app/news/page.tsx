@@ -4,6 +4,7 @@ import { useNews } from "@/hooks/useNews";
 import NewsCard from "@/components/NewsCard";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
+import Link from "next/link";
 
 export default function NewsPage() {
   const { newsList, loading, error } = useNews();
@@ -49,7 +50,9 @@ export default function NewsPage() {
         {!loading && !error && newsList.length > 0 ? (
           <div className="space-y-6">
             {newsList.map((news) => (
-              <NewsCard key={news.newsId} news={news} />
+              <Link key={news.newsId} href={`/news/${news.newsId}`}>
+                <NewsCard news={news} />
+              </Link>
             ))}
           </div>
         ) : (
