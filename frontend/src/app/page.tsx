@@ -1,22 +1,20 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNews } from "@/hooks/useNews";
 import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import NewsCard from "@/components/NewsCard";
+import { Schedule } from "@/types/schedule";
+import { getSchedulesAPI } from "@/services/scheduleService";
 
 export default function Home() {
   const [selectedMenu, setSelectedMenu] = useState("drivers");
-  const { newsList, loading, error } = useNews();
-
-  // Dữ liệu giả lập cho Upcoming Races (có thể thay thế bằng API)
-  const upcomingRaces = [
-    { name: "Monaco Grand Prix", date: "2025-05-25T14:00:00", location: "Monte Carlo" },
-    { name: "Italian Grand Prix", date: "2025-06-01T14:00:00", location: "Monza" },
-    { name: "Canadian Grand Prix", date: "2025-06-08T14:00:00", location: "Montreal" },
-  ];
+  const { newsList, loading: newsLoading, error: newsError } = useNews();
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [schedulesLoading, setSchedulesLoading] = useState(true);
+  const [schedulesError, setSchedulesError] = useState<string | null>(null);
 
   // Dữ liệu giả lập cho Drivers/Teams (có thể thay thế bằng API)
   const topDrivers = [
@@ -29,6 +27,25 @@ export default function Home() {
     { name: "Ferrari", points: 180 },
     { name: "Mercedes", points: 165 },
   ];
+
+  // Fetch schedules
+  useEffect(() => {
+    const fetchSchedules = async () => {
+      try {
+        const data = await getSchedulesAPI();
+        // Sắp xếp theo eventDate (gần nhất trước)
+        const sortedSchedules = data.sort((a, b) =>
+          new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
+        );
+        setSchedules(sortedSchedules);
+      } catch (err: any) {
+        setSchedulesError(err.message || "Không thể tải lịch thi đấu");
+      } finally {
+        setSchedulesLoading(false);
+      }
+    };
+    fetchSchedules();
+  }, []);
 
   const menuContents = {
     drivers: (
@@ -64,16 +81,34 @@ export default function Home() {
     races: (
       <div className="p-6">
         <h3 className="text-xl font-bold text-gray-900 mb-4">Upcoming Races</h3>
-        <ul className="space-y-3">
-          {upcomingRaces.map((race, index) => (
-            <li key={index} className="text-gray-600">
-              {race.name} - {new Date(race.date).toLocaleDateString("vi-VN")} - {race.location}
-            </li>
-          ))}
-        </ul>
-        <Link href="/schedule" className="text-red-950 font-semibold hover:text-red-700 mt-4 inline-block">
-          Xem lịch đua →
-        </Link>
+        {schedulesLoading ? (
+          <p className="text-gray-600">Đang tải...</p>
+        ) : schedulesError ? (
+          <p className="text-red-600">{schedulesError}</p>
+        ) : (
+          <>
+            <ul className="space-y-3">
+              {schedules
+                .filter((schedule) => {
+                  const eventDateTime = new Date(
+                    `${schedule.eventDate}T${schedule.eventTime}+07:00`
+                  );
+                  return eventDateTime > new Date("2025-05-21T13:05:00+07:00");
+                })
+                .slice(0, 3)
+                .map((schedule) => (
+                  <li key={schedule.scheduleId} className="text-gray-600">
+                    {schedule.race.raceName} -{" "}
+                    {new Date(schedule.eventDate).toLocaleDateString("vi-VN")} -{" "}
+                    {schedule.race.location}
+                  </li>
+                ))}
+            </ul>
+            <Link href="/schedule" className="text-red-950 font-semibold hover:text-red-700 mt-4 inline-block">
+              Xem lịch đua →
+            </Link>
+          </>
+        )}
       </div>
     ),
   };
@@ -86,12 +121,22 @@ export default function Home() {
   // Lấy 5 tin tức mới nhất cho danh sách mini
   const miniNewsList = sortedNewsList.slice(0, 5);
 
+  // Lọc 3 lịch thi đấu sắp tới cho Upcoming Races Section
+  const upcomingSchedules = schedules
+    .filter((schedule) => {
+      const eventDateTime = new Date(
+        `${schedule.eventDate}T${schedule.eventTime}+07:00`
+      );
+      return eventDateTime > new Date("2025-05-21T13:05:00+07:00");
+    })
+    .slice(0, 3);
+
   return (
     <div className="flex flex-col bg-gray-200 min-h-screen">
       <NavBar />
 
       {/* Main Content */}
-      <main className="flex-grow mt-20">
+      <main className="flex-grow mt-5">
         {/* Hero Section with Video Background */}
         <section className="relative h-[60vh] w-full overflow-hidden">
           <video
@@ -114,7 +159,10 @@ export default function Home() {
                 Trải nghiệm cảm giác hồi hộp của môn thể thao tốc độ hấp dẫn nhất thế giới.
               </p>
               <p className="text-md text-gray-300 mb-8">
-                Cuộc đua tiếp theo: Monaco Grand Prix – 25/05/2025
+                Cuộc đua tiếp theo: {upcomingSchedules[0]?.race.raceName || "Chưa có lịch"} –{" "}
+                {upcomingSchedules[0]?.eventDate
+                  ? new Date(upcomingSchedules[0].eventDate).toLocaleDateString("vi-VN")
+                  : ""}
               </p>
               <Link
                 href="/schedule"
@@ -127,17 +175,21 @@ export default function Home() {
         </section>
 
         {/* Two-Column Section: Left (Highlight), Right (Mini News) */}
-        <section className="bg-gray-300 py-16">
+        <section className="bg-gray-200 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column: Highlight Content */}
               <div className="lg:col-span-2">
                 <div className="bg-white p-6 rounded-lg shadow-md">
                   <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                    Đếm ngược đến Monaco Grand Prix
+                    Đếm ngược đến {upcomingSchedules[0]?.race.raceName || "cuộc đua tiếp theo"}
                   </h2>
                   <p className="text-gray-600 mb-4">
-                    Chỉ còn 4 ngày nữa! Cuộc đua tại Monte Carlo sẽ diễn ra vào ngày 25/05/2025. Đừng bỏ lỡ!
+                    {upcomingSchedules[0]
+                      ? `Chỉ còn 4 ngày nữa! Cuộc đua tại ${upcomingSchedules[0].race.location} sẽ diễn ra vào ngày ${new Date(
+                          upcomingSchedules[0].eventDate
+                        ).toLocaleDateString("vi-VN")}. Đừng bỏ lỡ!`
+                      : "Chưa có lịch thi đấu sắp tới."}
                   </p>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     Tay đua dẫn đầu
@@ -160,16 +212,16 @@ export default function Home() {
                   <h2 className="text-xl font-bold text-gray-900 mb-4">
                     Tin tức mới nhất
                   </h2>
-                  {loading && (
+                  {newsLoading && (
                     <p className="text-gray-600">Đang tải tin tức...</p>
                   )}
-                  {error && (
-                    <p className="text-red-600">Lỗi: {error}</p>
+                  {newsError && (
+                    <p className="text-red-600">Lỗi: {newsError}</p>
                   )}
-                  {!loading && !error && miniNewsList.length === 0 && (
+                  {!newsLoading && !newsError && miniNewsList.length === 0 && (
                     <p className="text-gray-600">Không có tin tức nào.</p>
                   )}
-                  {!loading && !error && miniNewsList.length > 0 && (
+                  {!newsLoading && !newsError && miniNewsList.length > 0 && (
                     <div className="space-y-4">
                       {miniNewsList.map((news) => (
                         <Link key={news.newsId} href={`/news/${news.newsId}`}>
@@ -212,7 +264,38 @@ export default function Home() {
           </div>
         </section>
 
-        
+        {/* News Section */}
+        <section className="bg-gray-200 py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+              Tin Tức Mới Nhất
+            </h2>
+            {newsLoading && (
+              <p className="text-center text-gray-600">Đang tải tin tức...</p>
+            )}
+            {newsError && (
+              <p className="text-center text-red-600">Lỗi: {newsError}</p>
+            )}
+            {!newsLoading && !newsError && sortedNewsList.length === 0 && (
+              <p className="text-center text-gray-600">Không có tin tức nào.</p>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sortedNewsList.slice(0, 6).map((news) => (
+                <Link key={news.newsId} href={`/news/${news.newsId}`}>
+                  <NewsCard news={news} />
+                </Link>
+              ))}
+            </div>
+            <div className="text-center mt-8">
+              <Link
+                href="/news"
+                className="inline-block bg-red-950 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-red-700 transition-all duration-300"
+              >
+                Xem Tất Cả Tin Tức
+              </Link>
+            </div>
+          </div>
+        </section>
 
         {/* Menu Section: Drivers, Teams, Races */}
         <section className="bg-red-800 w-screen py-6 flex justify-center items-center">
@@ -242,17 +325,35 @@ export default function Home() {
         </section>
 
         {/* Upcoming Races Section */}
-        <section className="bg-gray-300 py-16">
+        <section className="bg-gray-200 py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
               Các Cuộc Đua Sắp Tới
             </h2>
+            {schedulesLoading && (
+              <p className="text-center text-gray-600">Đang tải lịch thi đấu...</p>
+            )}
+            {schedulesError && (
+              <p className="text-center text-red-600">Lỗi: {schedulesError}</p>
+            )}
+            {!schedulesLoading && !schedulesError && upcomingSchedules.length === 0 && (
+              <p className="text-center text-gray-600">Không có lịch thi đấu sắp tới.</p>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {upcomingRaces.map((race, index) => (
-                <div key={index} className="bg-white p-6 rounded-lg shadow-md text-center">
-                  <h3 className="text-lg font-semibold text-gray-900">{race.name}</h3>
+              {upcomingSchedules.map((schedule) => (
+                <div
+                  key={schedule.scheduleId}
+                  className="bg-white p-6 rounded-lg shadow-md text-center"
+                >
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {schedule.race.raceName}
+                  </h3>
                   <p className="text-gray-600 mt-2">
-                    {new Date(race.date).toLocaleDateString("vi-VN")} - {race.location}
+                    {new Date(schedule.eventDate).toLocaleDateString("vi-VN")} -{" "}
+                    {schedule.race.location}
+                  </p>
+                  <p className="text-gray-500 text-sm mt-1">
+                    {schedule.eventTime.slice(0, 5)}
                   </p>
                 </div>
               ))}
