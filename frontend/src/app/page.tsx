@@ -78,8 +78,13 @@ export default function Home() {
     ),
   };
 
+  // Sắp xếp newsList theo publishedDate (mới nhất lên đầu)
+  const sortedNewsList = [...newsList].sort((a, b) => {
+    return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
+  });
+
   // Lấy 5 tin tức mới nhất cho danh sách mini
-  const miniNewsList = newsList.slice(0, 5);
+  const miniNewsList = sortedNewsList.slice(0, 5);
 
   return (
     <div className="flex flex-col bg-gray-200 min-h-screen">
@@ -206,11 +211,11 @@ export default function Home() {
             {error && (
               <p className="text-center text-red-600">Lỗi: {error}</p>
             )}
-            {!loading && !error && newsList.length === 0 && (
+            {!loading && !error && sortedNewsList.length === 0 && (
               <p className="text-center text-gray-600">Không có tin tức nào.</p>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {newsList.slice(0, 6).map((news) => (
+              {sortedNewsList.slice(0, 6).map((news) => (
                 <Link key={news.newsId} href={`/news/${news.newsId}`}>
                   <NewsCard news={news} />
                 </Link>
