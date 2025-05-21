@@ -199,38 +199,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* News Section */}
-        <section className="bg-gray-200 py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-              Tin Tức Mới Nhất
-            </h2>
-            {loading && (
-              <p className="text-center text-gray-600">Đang tải tin tức...</p>
-            )}
-            {error && (
-              <p className="text-center text-red-600">Lỗi: {error}</p>
-            )}
-            {!loading && !error && sortedNewsList.length === 0 && (
-              <p className="text-center text-gray-600">Không có tin tức nào.</p>
-            )}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sortedNewsList.slice(0, 6).map((news) => (
-                <Link key={news.newsId} href={`/news/${news.newsId}`}>
-                  <NewsCard news={news} />
-                </Link>
-              ))}
-            </div>
-            <div className="text-center mt-8">
-              <Link
-                href="/news"
-                className="inline-block bg-red-950 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-red-700 transition-all duration-300"
-              >
-                Xem Tất Cả Tin Tức
-              </Link>
-            </div>
-          </div>
-        </section>
+        
 
         {/* Menu Section: Drivers, Teams, Races */}
         <section className="bg-red-800 w-screen py-6 flex justify-center items-center">
